@@ -1,6 +1,6 @@
-# gits-frontend
+# meitrex-frontend
 
-Local dev environment setup for the frontend of the GITS project. Should not be used in production environments.
+Local dev environment setup for the frontend of the MEITREX project. Should not be used in production environments.
 
 ## Getting Started
 
