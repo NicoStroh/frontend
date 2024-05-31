@@ -1,14 +1,14 @@
 version: "3.7"
 
 services:
-  gits-frontend:
+  frontend:
     build:
-      context: ./../gits-frontend
+      context: ./../frontend
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_BACKEND_URL: "http://localhost:8080/graphql"
         NEXT_PUBLIC_OAUTH_REDIRECT_URL: "http://localhost:3005"
-        NEXT_PUBLIC_OAUTH_CLIENT_ID: "gits-frontend"
+        NEXT_PUBLIC_OAUTH_CLIENT_ID: "frontend"
         NEXT_PUBLIC_OAUTH_AUTHORITY: "http://localhost:9009/realms/GITS"
     ports:
       - "3005:3000"
@@ -23,5 +23,5 @@ services:
     command: start-dev --import-realm
     volumes:
       - type: bind
-        source: ./../gits-frontend/keycloak-realm
+        source: ./../frontend/keycloak-realm
         target: /opt/keycloak/data/import

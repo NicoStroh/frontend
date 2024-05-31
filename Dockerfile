@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml* ./
-RUN yarn global add pnpm && pnpm i --frozen-lockfile
+RUN yarn global add pnpm && pnpm i --no-frozen-lockfile
 
 
 # Rebuild the source code only when needed
@@ -18,7 +18,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ARG NEXT_PUBLIC_BACKEND_URL="/graphql"
 ARG NEXT_PUBLIC_OAUTH_REDIRECT_URL="https://orange.informatik.uni-stuttgart.de"
-ARG NEXT_PUBLIC_OAUTH_CLIENT_ID="gits-frontend"
+ARG NEXT_PUBLIC_OAUTH_CLIENT_ID="frontend"
 ARG NEXT_PUBLIC_OAUTH_AUTHORITY="https://orange.informatik.uni-stuttgart.de/keycloak/realms/GITS"
 
 RUN yarn global add pnpm \

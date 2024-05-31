@@ -21,7 +21,7 @@ jobs:
           cache: pnpm
 
       - name: Install packages
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Run relay
         run: mkdir -p ./__generated__ && pnpm run relay
@@ -49,7 +49,7 @@ jobs:
           cache: pnpm
 
       - name: Install packages
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Run prettier
         run: pnpm run check-format
