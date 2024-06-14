@@ -289,7 +289,7 @@
       ],
       "security-admin-console": [],
       "admin-cli": [],
-      "gits-frontend": [],
+      "frontend": [],
       "account-console": [],
       "broker": [
         {
@@ -622,7 +622,7 @@
     },
     {
       "id": "e08162a0-a822-4b1a-8951-abc0f1d2c63a",
-      "clientId": "gits-frontend",
+      "clientId": "frontend",
       "name": "",
       "description": "",
       "rootUrl": "",

@@ -31,7 +31,7 @@ dayjs.extend(isBetween);
 const oidcConfig: AuthProviderProps = {
   redirect_uri:
     process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ?? "http://localhost:3005",
-  client_id: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID ?? "gits-frontend",
+  client_id: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID ?? "frontend",
   authority:
     process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
     "http://localhost:9009/realms/GITS",
