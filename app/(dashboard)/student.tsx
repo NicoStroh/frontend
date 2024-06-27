@@ -16,6 +16,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import { Button } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Modal from "react-modal";
+import ShortBartleTest from "@/components/bartletest/ShortBartleTest";
 
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
@@ -124,12 +128,35 @@ export default function StudentPage() {
 
     .value();
 
+  const [showTest, setShowTest] = useState(false);
+  const [showPopup, setShowPopup] = useState(true); // Boolean to control the popup visibility
+
+  const handleTakeTestClick = () => {
+    setShowTest(true);
+    setShowPopup(false);
+  };
+
+  const handleBackToStartClick = () => {
+    setShowTest(false);
+  };
+
+  if (showTest) {
+    return <ShortBartleTest onBackToStart={handleBackToStartClick} />;
+  }
+
   return (
     <main>
       <div className="flex flex-wrap justify-between mb-10">
         <Typography variant="h1" gutterBottom>
           Dashboard
         </Typography>
+        <Button
+          variant="outline-primary"
+          style={{ marginLeft: "220px" }}
+          onClick={handleTakeTestClick}
+        >
+          Find out my player type
+        </Button>
         {/* Sort by Selection */}
         <Box sx={{ minWidth: 120, maxWidth: 150 }}>
           <FormControl fullWidth>
@@ -158,6 +185,29 @@ export default function StudentPage() {
           to join courses.
         </div>
       )}
+
+      <Modal
+        isOpen={showPopup}
+        onRequestClose={() => setShowPopup(false)}
+        contentLabel="Take the Test"
+        style={{
+          content: {
+            top: "50%",
+            left: "50%",
+            right: "auto",
+            bottom: "auto",
+            marginRight: "-50%",
+            transform: "translate(-50%, -50%)",
+            padding: "20px",
+            textAlign: "center",
+          },
+        }}
+      >
+        <h2>You have not yet taken the player-type test</h2>
+        <Button variant="outline-primary" onClick={handleTakeTestClick}>
+          Find out my player type
+        </Button>
+      </Modal>
     </main>
   );
 }
