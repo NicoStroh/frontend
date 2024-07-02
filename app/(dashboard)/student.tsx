@@ -20,8 +20,14 @@ import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Modal from "react-modal";
 import ShortBartleTest from "@/components/bartletest/ShortBartleTest";
+import { ApolloProvider, InMemoryCache, ApolloClient } from "@apollo/client";
 
-export default function StudentPage() {
+const client = new ApolloClient({
+  uri: "http://localhost:8080/graphql",
+  cache: new InMemoryCache(),
+});
+
+function StudentPageContent() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
       query studentStudentQuery {
@@ -209,5 +215,13 @@ export default function StudentPage() {
         </Button>
       </Modal>
     </main>
+  );
+}
+
+export default function StudentPage() {
+  return (
+    <ApolloProvider client={client}>
+      <StudentPageContent />
+    </ApolloProvider>
   );
 }

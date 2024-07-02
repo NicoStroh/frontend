@@ -1282,7 +1282,30 @@ type PublicUserInfo {
   userName: String!
 }
 
+
+type PlayerTypeTestQuestion {
+  id: ID!
+  text: String!
+  option0: String!
+  option1: String!
+  selectedOption: Boolean!
+}
+
+type ShortBartleTestResult {
+  achieverPercentage: Int!
+  explorerPercentage: Int!
+  socializerPercentage: Int!
+  killerPercentage: Int!
+}
+
 type Query {
+  # Get test questions
+  _internal_noauth_test: [PlayerTypeTestQuestion!]!
+  # Test evaluation
+  _internal_noauth_evaluateTest: ShortBartleTestResult!
+  # Has the user taken the playertype test?
+  _internal_noauth_userHasTakenTest(userUUID: UUID!): Boolean!
+
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
   contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]

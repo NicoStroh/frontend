@@ -4,6 +4,7 @@ import Question from "./Question";
 import ShortBartleTestResult from "./ShortBartleTestResult";
 import ShortBartleTestExplanation from "./ShortBartleTestExplanation";
 import { EvaluationData } from "./types";
+import { useQuery, useMutation, gql } from "@apollo/client";
 
 interface QuestionType {
   id: number;
@@ -16,6 +17,37 @@ interface QuestionType {
 interface ShortBartleTestProps {
   onBackToStart: () => void;
 }
+
+// Query for requesting questions of test
+const TEST = gql`
+  query Test {
+    _internal_noauth_test {
+      id
+      text
+      option0
+      option1
+    }
+  }
+`;
+
+// Mutation for submitting an answer
+const SUBMIT_ANSWER = gql`
+  mutation SubmitAnswer($questionId: Int!, $answer: Boolean!) {
+    submitAnswer(questionId: $questionId, answer: $answer)
+  }
+`;
+
+// Query for evaluating the test result
+const EVALUATE_TEST = gql`
+  query EvaluateTest {
+    _internal_noauth_evaluateTest {
+      achieverPercentage
+      explorerPercentage
+      socializerPercentage
+      killerPercentage
+    }
+  }
+`;
 
 const sampleQuestions: QuestionType[] = [
   {
@@ -45,29 +77,57 @@ const sampleEvaluationData: EvaluationData = {
 export default function ShortBartleTest({
   onBackToStart,
 }: ShortBartleTestProps) {
+  const { loading, error, data } = useQuery<{ test: QuestionType[] }>(TEST);
+  const [submitAnswer] = useMutation(SUBMIT_ANSWER);
+  const { data: evaluationData, refetch: evaluateTest } = useQuery<{
+    evaluateTest: EvaluationData;
+  }>(EVALUATE_TEST, {
+    skip: true, // Skip the query initially
+  });
+
   const [questions, setQuestions] = useState<QuestionType[]>(sampleQuestions);
   const [allQuestionsAnswered, setAllQuestionsAnswered] =
     useState<boolean>(false);
   const [evaluationVisible, setEvaluationVisible] = useState<boolean>(false);
-  const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(
-    null
-  );
+  const [evaluationDataState, setEvaluationDataState] =
+    useState<EvaluationData | null>(null);
 
+  // Load test questions and initialize answers to null
+  useEffect(() => {
+    if (data) {
+      setQuestions(data.test.map((q) => ({ ...q, answer: null })));
+    }
+  }, [data]);
+
+  // Check if all questions are answered
   useEffect(() => {
     const answered = questions.every((q) => q.answer !== null);
     setAllQuestionsAnswered(answered);
   }, [questions]);
 
   const handleOptionChange = (questionId: number, answer: boolean) => {
+    submitAnswer({ variables: { questionId, answer } });
     setQuestions((prevQuestions) =>
       prevQuestions.map((q) => (q.id === questionId ? { ...q, answer } : q))
     );
   };
 
   const handleEvaluate = () => {
-    setEvaluationData(sampleEvaluationData);
-    setEvaluationVisible(true);
+    evaluateTest().then(({ data }) => {
+      setEvaluationDataState(data.evaluateTest);
+      setEvaluationVisible(true);
+    });
   };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) {
+    return (
+      <p>
+        Error: {error.message}. Ensure that the API is configured to allow
+        unauthenticated access to the test.
+      </p>
+    );
+  }
 
   return (
     <Container className="mt-4 mb-4">
@@ -95,11 +155,11 @@ export default function ShortBartleTest({
           >
             Evaluate Test
           </Button>
-          {evaluationVisible && evaluationData && (
+          {evaluationVisible && evaluationDataState && (
             <div>
               <ShortBartleTestResult
                 className="mb-3"
-                evaluationData={evaluationData}
+                evaluationData={evaluationDataState}
               />
               <Button
                 variant="outline-primary"
