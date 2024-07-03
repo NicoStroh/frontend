@@ -3,44 +3,27 @@ import { ListGroup, Button, Container, Row, Col } from "react-bootstrap";
 import Question from "./Question";
 import ShortBartleTestResult from "./ShortBartleTestResult";
 import ShortBartleTestExplanation from "./ShortBartleTestExplanation";
-import { EvaluationData } from "./types";
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { EvaluationData, QuestionType } from "./types";
+import { useLazyLoadQuery } from "react-relay";
+import { graphql, commitMutation, Environment } from "relay-runtime";
+import { useRelayEnvironment } from "react-relay/hooks";
+import {
+  ShortBartleTestTestQuery,
+  ShortBartleTestTestQuery$data,
+} from "@/__generated__/ShortBartleTestTestQuery.graphql";
 
-interface QuestionType {
-  id: number;
-  text: string;
-  option0: string;
-  option1: string;
-  answer: boolean | null;
-}
-
-interface ShortBartleTestProps {
-  onBackToStart: () => void;
-}
-
-// Query for requesting questions of test
-const TEST = gql`
-  query Test {
-    _internal_noauth_test {
-      id
-      text
-      option0
-      option1
-    }
-  }
-`;
-
-// Mutation for submitting an answer
-const SUBMIT_ANSWER = gql`
-  mutation SubmitAnswer($questionId: Int!, $answer: Boolean!) {
+const submitAnswerMutation = graphql`
+  mutation ShortBartleTestSubmitAnswerMutation(
+    $questionId: Int!
+    $answer: Boolean!
+  ) {
     submitAnswer(questionId: $questionId, answer: $answer)
   }
 `;
 
-// Query for evaluating the test result
-const EVALUATE_TEST = gql`
-  query EvaluateTest {
-    _internal_noauth_evaluateTest {
+const evaluateTestMutation = graphql`
+  mutation ShortBartleTestEvaluateTestMutation($uuid: UUID!) {
+    evaluateTest(userUUID: $uuid) {
       achieverPercentage
       explorerPercentage
       socializerPercentage
@@ -49,85 +32,139 @@ const EVALUATE_TEST = gql`
   }
 `;
 
-const sampleQuestions: QuestionType[] = [
-  {
-    id: 1,
-    text: "Do you enjoy exploring?",
-    option0: "Yes",
-    option1: "No",
-    answer: null,
-  },
-  {
-    id: 2,
-    text: "Do you enjoy competing?",
-    option0: "Yes",
-    option1: "No",
-    answer: null,
-  },
-  // Add more sample questions as needed
-];
+function submitAnswer(
+  environment: Environment,
+  questionId: number,
+  answer: boolean,
+  onCompleted: (response: any) => void,
+  onError: (error: Error) => void
+) {
+  const variables = {
+    questionId,
+    answer,
+  };
 
-const sampleEvaluationData: EvaluationData = {
-  achieverPercentage: 25,
-  explorerPercentage: 25,
-  socializerPercentage: 25,
-  killerPercentage: 25,
-};
+  commitMutation(environment, {
+    mutation: submitAnswerMutation,
+    variables,
+    onCompleted,
+    onError,
+  });
+}
+
+function evaluateTest(
+  environment: Environment,
+  uuid: string,
+  onCompleted: (response: any) => void,
+  onError: (error: Error) => void
+) {
+  const variables = {
+    uuid,
+  };
+
+  commitMutation(environment, {
+    mutation: evaluateTestMutation,
+    variables,
+    onCompleted,
+    onError,
+  });
+}
+
+interface ShortBartleTestProps {
+  onBackToStart: () => void;
+  currentUserId: string;
+}
+
+function mapQueryDataToQuestions(
+  data: ShortBartleTestTestQuery$data
+): QuestionType[] {
+  return data.test.map((question) => ({
+    id: Number(question.id),
+    text: question.text,
+    option0: question.option0,
+    option1: question.option1,
+    answer: null,
+  }));
+}
 
 export default function ShortBartleTest({
   onBackToStart,
+  currentUserId,
 }: ShortBartleTestProps) {
-  const { loading, error, data } = useQuery<{ test: QuestionType[] }>(TEST);
-  const [submitAnswer] = useMutation(SUBMIT_ANSWER);
-  const { data: evaluationData, refetch: evaluateTest } = useQuery<{
-    evaluateTest: EvaluationData;
-  }>(EVALUATE_TEST, {
-    skip: true, // Skip the query initially
-  });
+  const environment = useRelayEnvironment();
 
-  const [questions, setQuestions] = useState<QuestionType[]>(sampleQuestions);
+  const testData = useLazyLoadQuery<ShortBartleTestTestQuery>(
+    graphql`
+      query ShortBartleTestTestQuery {
+        test {
+          id
+          text
+          option0
+          option1
+        }
+      }
+    `,
+    {}
+  );
+
+  const [questions, setQuestions] = useState<QuestionType[]>([]);
   const [allQuestionsAnswered, setAllQuestionsAnswered] =
     useState<boolean>(false);
   const [evaluationVisible, setEvaluationVisible] = useState<boolean>(false);
-  const [evaluationDataState, setEvaluationDataState] =
-    useState<EvaluationData | null>(null);
+  const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(
+    null
+  );
 
-  // Load test questions and initialize answers to null
   useEffect(() => {
-    if (data) {
-      setQuestions(data.test.map((q) => ({ ...q, answer: null })));
+    if (testData) {
+      console.log("Fetched test");
+      const mappedQuestions = mapQueryDataToQuestions(testData);
+      setQuestions(mappedQuestions);
     }
-  }, [data]);
+  }, [testData]);
 
-  // Check if all questions are answered
   useEffect(() => {
     const answered = questions.every((q) => q.answer !== null);
     setAllQuestionsAnswered(answered);
   }, [questions]);
 
   const handleOptionChange = (questionId: number, answer: boolean) => {
-    submitAnswer({ variables: { questionId, answer } });
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((q) => (q.id === questionId ? { ...q, answer } : q))
+    submitAnswer(
+      environment,
+      questionId,
+      answer,
+      (response) => {
+        console.log("Submitted answer:", response);
+        setQuestions((prevQuestions) =>
+          prevQuestions.map((q) => (q.id === questionId ? { ...q, answer } : q))
+        );
+      },
+      (error) => {
+        console.error("Error submitting answer:", error);
+      }
     );
   };
 
   const handleEvaluate = () => {
-    evaluateTest().then(({ data }) => {
-      setEvaluationDataState(data.evaluateTest);
-      setEvaluationVisible(true);
-    });
-  };
-
-  if (loading) return <p>Loading...</p>;
-  if (error) {
-    return (
-      <p>
-        Error: {error.message}. Ensure that the API is configured to allow
-        unauthenticated access to the test.
-      </p>
+    evaluateTest(
+      environment,
+      currentUserId,
+      (response) => {
+        const result = response.evaluateTest;
+        setEvaluationData({
+          achieverPercentage: result.achieverPercentage,
+          explorerPercentage: result.explorerPercentage,
+          socializerPercentage: result.socializerPercentage,
+          killerPercentage: result.killerPercentage,
+        });
+        setEvaluationVisible(true);
+        console.log("Evaluated test");
+      },
+      (error) => {
+        console.error("Error evaluating test:", error);
+      }
     );
-  }
+  };
 
   return (
     <Container className="mt-4 mb-4">
@@ -155,11 +192,11 @@ export default function ShortBartleTest({
           >
             Evaluate Test
           </Button>
-          {evaluationVisible && evaluationDataState && (
+          {evaluationVisible && evaluationData && (
             <div>
               <ShortBartleTestResult
                 className="mb-3"
-                evaluationData={evaluationDataState}
+                evaluationData={evaluationData}
               />
               <Button
                 variant="outline-primary"

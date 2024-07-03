@@ -13,21 +13,16 @@ import {
 import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Modal from "react-modal";
 import ShortBartleTest from "@/components/bartletest/ShortBartleTest";
-import { ApolloProvider, InMemoryCache, ApolloClient } from "@apollo/client";
+import { studentUserHasTakenTestQuery } from "@/__generated__/studentUserHasTakenTestQuery.graphql";
 
-const client = new ApolloClient({
-  uri: "http://localhost:8080/graphql",
-  cache: new InMemoryCache(),
-});
-
-function StudentPageContent() {
+export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
       query studentStudentQuery {
@@ -65,6 +60,15 @@ function StudentPageContent() {
       }
     `,
     {}
+  );
+
+  const data = useLazyLoadQuery<studentUserHasTakenTestQuery>(
+    graphql`
+      query studentUserHasTakenTestQuery($uuid: UUID!) {
+        userHasTakenTest(userUUID: $uuid)
+      }
+    `,
+    { uuid: currentUserInfo.id }
   );
 
   const courses = [
@@ -135,7 +139,7 @@ function StudentPageContent() {
     .value();
 
   const [showTest, setShowTest] = useState(false);
-  const [showPopup, setShowPopup] = useState(true); // Boolean to control the popup visibility
+  const [showPopup, setShowPopup] = useState(false); // Boolean to control the popup visibility
 
   const handleTakeTestClick = () => {
     setShowTest(true);
@@ -146,8 +150,20 @@ function StudentPageContent() {
     setShowTest(false);
   };
 
+  // Check if the user has taken the test
+  useEffect(() => {
+    if (data && !data.userHasTakenTest) {
+      setShowPopup(true);
+    }
+  }, [data]);
+
   if (showTest) {
-    return <ShortBartleTest onBackToStart={handleBackToStartClick} />;
+    return (
+      <ShortBartleTest
+        onBackToStart={handleBackToStartClick}
+        currentUserId={currentUserInfo.id}
+      />
+    );
   }
 
   return (
@@ -215,13 +231,5 @@ function StudentPageContent() {
         </Button>
       </Modal>
     </main>
-  );
-}
-
-export default function StudentPage() {
-  return (
-    <ApolloProvider client={client}>
-      <StudentPageContent />
-    </ApolloProvider>
   );
 }

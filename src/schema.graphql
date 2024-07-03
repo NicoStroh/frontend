@@ -1064,6 +1064,11 @@ type MultipleChoiceQuestion implements Question {
 }
 
 type Mutation {
+  # Submit the answer for a question of the bartle test
+  submitAnswer(questionId: Int!, answer: Boolean!): String
+  # Test evaluation
+  evaluateTest(userUUID: UUID!): ShortBartleTestResult!
+
   # Modify Content
   # 🔒 The user must have admin access to the course containing the section to perform this action.
   mutateContent(contentId: UUID!): ContentMutation!
@@ -1300,11 +1305,9 @@ type ShortBartleTestResult {
 
 type Query {
   # Get test questions
-  _internal_noauth_test: [PlayerTypeTestQuestion!]!
-  # Test evaluation
-  _internal_noauth_evaluateTest: ShortBartleTestResult!
+  test: [PlayerTypeTestQuestion!]!
   # Has the user taken the playertype test?
-  _internal_noauth_userHasTakenTest(userUUID: UUID!): Boolean!
+  userHasTakenTest(userUUID: UUID!): Boolean!
 
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
