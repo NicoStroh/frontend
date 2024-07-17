@@ -32,6 +32,30 @@ const evaluateTestMutation = graphql`
   }
 `;
 
+const createOrUpdatePlayerTypeMutation = graphql`
+  mutation ShortBartleTestCreateOrUpdatePlayerTypeMutation(
+    $userUUID: UUID!
+    $achieverPercentage: Int!
+    $explorerPercentage: Int!
+    $socializerPercentage: Int!
+    $killerPercentage: Int!
+  ) {
+    createOrUpdatePlayerType(
+      userUUID: $userUUID
+      achieverPercentage: $achieverPercentage
+      explorerPercentage: $explorerPercentage
+      socializerPercentage: $socializerPercentage
+      killerPercentage: $killerPercentage
+    ) {
+      userUUID
+      achieverPercentage
+      explorerPercentage
+      socializerPercentage
+      killerPercentage
+    }
+  }
+`;
+
 function submitAnswer(
   environment: Environment,
   questionId: number,
@@ -64,6 +88,36 @@ function evaluateTest(
 
   commitMutation(environment, {
     mutation: evaluateTestMutation,
+    variables,
+    onCompleted,
+    onError,
+  });
+}
+
+function createOrUpdatePlayerType(
+  environment: Environment,
+  userUUID: string,
+  evaluationData: EvaluationData,
+  onCompleted: (response: any) => void,
+  onError: (error: Error) => void
+) {
+  if (!userUUID) {
+    console.error("currentUserId is missing");
+    return;
+  } else {
+    console.log(userUUID);
+  }
+
+  const variables = {
+    userUUID: userUUID,
+    achieverPercentage: evaluationData.achieverPercentage,
+    explorerPercentage: evaluationData.explorerPercentage,
+    socializerPercentage: evaluationData.socializerPercentage,
+    killerPercentage: evaluationData.killerPercentage,
+  };
+
+  commitMutation(environment, {
+    mutation: createOrUpdatePlayerTypeMutation,
     variables,
     onCompleted,
     onError,
@@ -146,19 +200,38 @@ export default function ShortBartleTest({
   };
 
   const handleEvaluate = () => {
+    if (!currentUserId) {
+      console.error("currentUserId is missing");
+      return;
+    }
+
     evaluateTest(
       environment,
       currentUserId,
       (response) => {
         const result = response.evaluateTest;
-        setEvaluationData({
+        const evaluationResult = {
           achieverPercentage: result.achieverPercentage,
           explorerPercentage: result.explorerPercentage,
           socializerPercentage: result.socializerPercentage,
           killerPercentage: result.killerPercentage,
-        });
+        };
+        setEvaluationData(evaluationResult);
         setEvaluationVisible(true);
         console.log("Evaluated test");
+
+        // Save the evaluation result
+        createOrUpdatePlayerType(
+          environment,
+          currentUserId,
+          evaluationResult,
+          (response) => {
+            console.log("Saved player type:", response);
+          },
+          (error) => {
+            console.error("Error saving player type:", error);
+          }
+        );
       },
       (error) => {
         console.error("Error evaluating test:", error);

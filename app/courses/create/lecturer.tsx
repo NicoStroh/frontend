@@ -38,6 +38,12 @@ function TableRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+const addCourseMutation = graphql`
+  mutation lecturerAddCourseMutation($courseUUID: UUID!) {
+    addCourse(courseUUID: $courseUUID)
+  }
+`;
+
 export default function NewCourse() {
   const router = useRouter();
 
@@ -68,17 +74,19 @@ export default function NewCourse() {
       }
     `);
 
-  const [addChapter, isUpdating] =
-    useMutation<lecturerCreateChapterMutation>(graphql`
-      mutation lecturerCreateChapterMutation($chapter: CreateChapterInput!) {
-        createChapter(input: $chapter) {
-          id
-          course {
-            ...AddChapterModalFragment
-          }
+  const [addChapter] = useMutation<lecturerCreateChapterMutation>(graphql`
+    mutation lecturerCreateChapterMutation($chapter: CreateChapterInput!) {
+      createChapter(input: $chapter) {
+        id
+        course {
+          ...AddChapterModalFragment
         }
       }
-    `);
+    }
+  `);
+
+  const [addCourse] = useMutation(addCourseMutation);
+
   const [error, setError] = useState<any>(null);
 
   function handleSubmit() {
@@ -126,7 +134,16 @@ export default function NewCourse() {
               if (num < chapterCount - 1) {
                 _addChapter(num + 1);
               } else {
-                router.push(`/courses/${response.createCourse.id}`);
+                // Add course after all chapters have been added
+                addCourse({
+                  variables: {
+                    courseUUID: response.createCourse.id,
+                  },
+                  onError: setError,
+                  onCompleted() {
+                    router.push(`/courses/${response.createCourse.id}`);
+                  },
+                });
               }
             },
           });
@@ -157,7 +174,7 @@ export default function NewCourse() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             multiline
-          />{" "}
+          />
           <TextField
             className="w-80 lg:w-96"
             label="Number of chapters"

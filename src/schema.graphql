@@ -1069,6 +1069,13 @@ type Mutation {
   # Test evaluation
   evaluateTest(userUUID: UUID!): ShortBartleTestResult!
 
+  createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!,
+    socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
+
+  addCourse(courseUUID: UUID!): String!
+  addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
+
+
   # Modify Content
   # 🔒 The user must have admin access to the course containing the section to perform this action.
   mutateContent(contentId: UUID!): ContentMutation!
@@ -1297,6 +1304,14 @@ type PlayerTypeTestQuestion {
 }
 
 type ShortBartleTestResult {
+  achieverPercentage: Int!
+  explorerPercentage: Int!
+  socializerPercentage: Int!
+  killerPercentage: Int!
+}
+
+type PlayerType {
+  userUUID: UUID!
   achieverPercentage: Int!
   explorerPercentage: Int!
   socializerPercentage: Int!

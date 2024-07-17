@@ -4,6 +4,7 @@ import { pageCourseJoinMutation } from "@/__generated__/pageCourseJoinMutation.g
 import { pageCourseListItemFragment$key } from "@/__generated__/pageCourseListItemFragment.graphql";
 import { pageCourseListQuery } from "@/__generated__/pageCourseListQuery.graphql";
 import { pageCourseUpdateMembershipMutation } from "@/__generated__/pageCourseUpdateMembershipMutation.graphql";
+import { pageCourseAddUserToCourseMutation } from "@/__generated__/pageCourseAddUserToCourseMutation.graphql";
 import { yearDivisionToStringShort } from "@/components/CourseCard";
 import { PageView, usePageView } from "@/src/currentView";
 import { ArrowForward } from "@mui/icons-material";
@@ -120,6 +121,17 @@ export default function StudentCourseList() {
       }
     `);
 
+  const [addUserToCourse] = useMutation<pageCourseAddUserToCourseMutation>(
+    graphql`
+      mutation pageCourseAddUserToCourseMutation(
+        $userUUID: UUID!
+        $courseUUID: UUID!
+      ) {
+        addUserToCourse(userUUID: $userUUID, courseUUID: $courseUUID)
+      }
+    `
+  );
+
   const [error, setError] = useState<any>(null);
 
   const router = useRouter();
@@ -209,7 +221,13 @@ export default function StudentCourseList() {
                             userId,
                           },
                         },
-                        onCompleted() {
+                        onCompleted(response) {
+                          addUserToCourse({
+                            variables: {
+                              userUUID: userId,
+                              courseUUID: course.id,
+                            },
+                          });
                           router.push(`/courses/${course.id}`);
                         },
                         onError: setError,
@@ -236,7 +254,14 @@ export default function StudentCourseList() {
                         variables: {
                           courseId: course.id,
                         },
-                        onCompleted() {
+                        onCompleted(response) {
+                          // Aufruf der addUserToCourse-Mutation nach erfolgreichem Beitritt zum Kurs
+                          addUserToCourse({
+                            variables: {
+                              userUUID: userId,
+                              courseUUID: course.id,
+                            },
+                          });
                           router.push(`/courses/${course.id}`);
                         },
                         onError: setError,
