@@ -7,6 +7,7 @@ import {
   studentQuizTrackCompletedMutation,
   studentQuizTrackCompletedMutation$data,
 } from "@/__generated__/studentQuizTrackCompletedMutation.graphql";
+import { studentQuizMarkBadgesAsAchievedMutation } from "@/__generated__/studentQuizMarkBadgesAsAchievedMutation.graphql";
 import { ContentTags } from "@/components/ContentTags";
 import { FormErrors } from "@/components/FormErrors";
 import { Heading } from "@/components/Heading";
@@ -34,9 +35,21 @@ import {
   useLazyLoadQuery,
   useMutation,
 } from "react-relay";
+import { studentId0Query } from "@/__generated__/studentId0Query.graphql";
 
 export default function StudentQuiz() {
-  // Get course id from url
+  const { currentUserInfo } = useLazyLoadQuery<studentId0Query>(
+    graphql`
+      query studentId0Query {
+        currentUserInfo {
+          id
+        }
+      }
+    `,
+    {}
+  );
+
+  // Get course id and quiz id from url
   const { quizId, courseId } = useParams();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,6 +75,31 @@ export default function StudentQuiz() {
             correctness
             hintsUsed
             success
+          }
+        }
+      `
+    );
+
+  const [markBadgesAsAchieved, markBadgesLoading] =
+    useMutation<studentQuizMarkBadgesAsAchievedMutation>(
+      graphql`
+        mutation studentQuizMarkBadgesAsAchievedMutation(
+          $userUUID: UUID!
+          $quizUUID: UUID!
+          $correctAnswers: Int!
+          $totalAnswers: Int!
+        ) {
+          markBadgesAsAchievedIfPassedQuiz(
+            userUUID: $userUUID
+            quizUUID: $quizUUID
+            correctAnswers: $correctAnswers
+            totalAnswers: $totalAnswers
+          ) {
+            userBadgeUUID
+            userUUID
+            badgeUUID
+            description
+            passingPercentage
           }
         }
       `
@@ -149,6 +187,29 @@ export default function StudentQuiz() {
         },
         onCompleted(response) {
           setFeedback(response.logQuizCompleted);
+
+          // Calculate correct answers and total answers
+          const correctAnswers = [
+            ...completedInput,
+            {
+              questionId: currentQuestion.id,
+              usedHint,
+              correct,
+            },
+          ].filter((answer) => answer.correct).length;
+          const totalAnswers = quiz.selectedQuestions.length;
+
+          // Mark badges as achieved
+          markBadgesAsAchieved({
+            variables: {
+              userUUID: currentUserInfo.id,
+              quizUUID: quizId!,
+              correctAnswers,
+              totalAnswers,
+            },
+            onError: setError,
+            onCompleted() {},
+          });
         },
       });
     }

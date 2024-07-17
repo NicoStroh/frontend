@@ -2,9 +2,10 @@ import { StudentFlashcard$key } from "@/__generated__/StudentFlashcard.graphql";
 import { StudentFlashcardSetLogProgressMutation } from "@/__generated__/StudentFlashcardSetLogProgressMutation.graphql";
 import { Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
-import { graphql, useMutation } from "react-relay";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { DisplayError } from "./PageError";
 import { StudentFlashcard } from "./StudentFlashcard";
+import { StudentFlashcardSetUserIdQuery } from "@/__generated__/StudentFlashcardSetUserIdQuery.graphql";
 
 export type FlashcardData = {
   id: string;
@@ -24,6 +25,18 @@ export function StudentFlashcardSet({
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knew, setKnew] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+
+  const { currentUserInfo } = useLazyLoadQuery<StudentFlashcardSetUserIdQuery>(
+    graphql`
+      query StudentFlashcardSetUserIdQuery {
+        currentUserInfo {
+          id
+        }
+      }
+    `,
+    {}
+  );
 
   const [setFlashcardLearned, logging] =
     useMutation<StudentFlashcardSetLogProgressMutation>(graphql`
@@ -35,6 +48,28 @@ export function StudentFlashcardSet({
         }
       }
     `);
+
+  const [markBadgesAsAchievedIfPassedFlashCardSet] = useMutation(graphql`
+    mutation StudentFlashcardSetMarkBadgesAsAchievedIfPassedMutation(
+      $userUUID: UUID!
+      $flashCardSetUUID: UUID!
+      $correctAnswers: Int!
+      $totalAnswers: Int!
+    ) {
+      markBadgesAsAchievedIfPassedFlashCardSet(
+        userUUID: $userUUID
+        flashCardSetUUID: $flashCardSetUUID
+        correctAnswers: $correctAnswers
+        totalAnswers: $totalAnswers
+      ) {
+        userBadgeUUID
+        userUUID
+        badgeUUID
+        description
+        passingPercentage
+      }
+    }
+  `);
 
   if (flashcards.length === 0) {
     return <DisplayError message={emptyMessage} />;
@@ -50,11 +85,26 @@ export function StudentFlashcardSet({
         },
       },
       onCompleted() {
+        if (knew) {
+          setCorrectAnswers((prev) => prev + 1);
+        }
+
         if (currentIndex + 1 < flashcards.length) {
           setCurrentIndex(currentIndex + 1);
           setKnew(false);
         } else {
-          onComplete();
+          markBadgesAsAchievedIfPassedFlashCardSet({
+            variables: {
+              userUUID: currentUserInfo.id,
+              flashCardSetUUID: currentFlashcard.id,
+              correctAnswers: correctAnswers + (knew ? 1 : 0),
+              totalAnswers: flashcards.length,
+            },
+            onCompleted() {
+              onComplete();
+            },
+            onError,
+          });
         }
       },
       onError,
