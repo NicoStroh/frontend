@@ -1068,12 +1068,18 @@ type Mutation {
   submitAnswer(questionId: Int!, answer: Boolean!): String
   # Test evaluation
   evaluateTest(userUUID: UUID!): ShortBartleTestResult!
-
+  # Save test result in gamification database
   createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!,
     socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
-
+  # Add course to gamification database
   addCourse(courseUUID: UUID!): String!
+  # Add user to cours in gamification database
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
+
+  markBadgesAsAchievedIfPassedQuiz(userUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
+  markBadgesAsAchievedIfPassedFlashCardSet(userUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
+  createBadgesForQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): [Badge!]!
+  createBadgesForFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): [Badge!]!
 
 
   # Modify Content
@@ -1294,7 +1300,7 @@ type PublicUserInfo {
   userName: String!
 }
 
-
+# Nico
 type PlayerTypeTestQuestion {
   id: ID!
   text: String!
@@ -1316,6 +1322,24 @@ type PlayerType {
   explorerPercentage: Int!
   socializerPercentage: Int!
   killerPercentage: Int!
+}
+
+type Badge {
+  badgeUUID: UUID!
+  name: String!
+  description: String
+  passingPercentage: Int!
+  quizUUID: UUID
+  flashCardSetUUID: UUID
+}
+
+type UserBadge {
+  userBadgeUUID: UUID!
+  userUUID: UUID!
+  badgeUUID: UUID!
+  achieved: Boolean!
+  description: String
+  passingPercentage: Int!
 }
 
 type Query {

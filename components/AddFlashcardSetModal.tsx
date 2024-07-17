@@ -12,6 +12,7 @@ import { useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 
 import { AddFlashcardSetModalFragment$key } from "@/__generated__/AddFlashcardSetModalFragment.graphql";
+import { AddFlashcardSetModalCreateBadgesForFlashCardSetMutation } from "@/__generated__/AddFlashcardSetModalCreateBadgesForFlashCardSetMutation.graphql";
 import {
   AddFlashcardSetModalMutation,
   ContentType,
@@ -26,6 +27,7 @@ import {
   ContentMetadataPayload,
 } from "./ContentMetadataFormSection";
 import { Form } from "./Form";
+import { useParams } from "next/navigation";
 
 export function AddFlashcardSetModal({
   onClose,
@@ -38,7 +40,11 @@ export function AddFlashcardSetModal({
   const [assessmentMetadata, setAssessmentMetadata] =
     useState<AssessmentMetadataPayload | null>(null);
   const [error, setError] = useState<any>(null);
+  const [isCreatingFlashcardSet, setIsCreatingFlashcardSet] = useState(false);
+  const [createBadgesLoading, setCreateBadgesLoading] = useState(false);
   const valid = metadata != null && assessmentMetadata != null;
+
+  const { courseId } = useParams();
 
   const chapter = useFragment(
     graphql`
@@ -50,7 +56,7 @@ export function AddFlashcardSetModal({
     _chapter
   );
 
-  const [createFlashcardSet, isCreatingFlashcardSet] =
+  const [createFlashcardSet] =
     useMutation<AddFlashcardSetModalMutation>(graphql`
       mutation AddFlashcardSetModalMutation(
         $assessmentInput: CreateAssessmentInput!
@@ -61,9 +67,7 @@ export function AddFlashcardSetModal({
         ) {
           __id
           __typename
-
           ...ContentLinkFragment
-
           id
           userProgressData {
             nextLearnDate
@@ -71,23 +75,35 @@ export function AddFlashcardSetModal({
         }
       }
     `);
-  const isUpdating = isCreatingFlashcardSet;
+
+  const [createBadgesForFlashCardSet] =
+    useMutation<AddFlashcardSetModalCreateBadgesForFlashCardSetMutation>(
+      graphql`
+        mutation AddFlashcardSetModalCreateBadgesForFlashCardSetMutation(
+          $flashCardSetUUID: UUID!
+          $name: String!
+          $courseUUID: UUID!
+        ) {
+          createBadgesForFlashCardSet(
+            flashCardSetUUID: $flashCardSetUUID
+            name: $name
+            courseUUID: $courseUUID
+          ) {
+            badgeUUID
+            name
+            description
+            passingPercentage
+            flashCardSetUUID
+          }
+        }
+      `
+    );
 
   function handleSubmit() {
-    const assessment = {
-      metadata: {
-        ...metadata!,
-        chapterId: chapter.id,
+    if (!valid) return;
 
-        type: "FLASHCARDS" as ContentType,
-      },
-      assessmentMetadata: {
-        ...assessmentMetadata!,
-        skillTypes: assessmentMetadata!.skillTypes as SkillType[],
-        initialLearningInterval: assessmentMetadata!
-          .initialLearningInterval as number,
-      },
-    };
+    setIsCreatingFlashcardSet(true);
+
     createFlashcardSet({
       variables: {
         assessmentInput: {
@@ -104,7 +120,30 @@ export function AddFlashcardSetModal({
           },
         },
       },
-      onError: setError,
+      onError: (err) => {
+        setError(err);
+        setIsCreatingFlashcardSet(false);
+      },
+      onCompleted(response) {
+        const flashCardSetUUID = response!.createFlashcardSetAssessment!.id;
+        setCreateBadgesLoading(true);
+        createBadgesForFlashCardSet({
+          variables: {
+            flashCardSetUUID,
+            name: metadata!.name,
+            courseUUID: courseId,
+          },
+          onError: (err) => {
+            setError(err);
+            setCreateBadgesLoading(false);
+          },
+          onCompleted() {
+            setIsCreatingFlashcardSet(false);
+            setCreateBadgesLoading(false);
+            onClose();
+          },
+        });
+      },
       updater(store, response) {
         // Get record of chapter and of the new assignment
         const chapterRecord = store.get(chapter.__id);
@@ -120,11 +159,7 @@ export function AddFlashcardSetModal({
           "contents"
         );
       },
-      onCompleted() {
-        onClose();
-      },
     });
-    onClose();
   }
 
   return (
@@ -144,12 +179,18 @@ export function AddFlashcardSetModal({
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button disabled={!valid} onClick={handleSubmit}>
+          <Button
+            disabled={!valid || isCreatingFlashcardSet}
+            onClick={handleSubmit}
+          >
             Save
           </Button>
         </DialogActions>
       </Dialog>
-      <Backdrop open={isUpdating} sx={{ zIndex: "modal" }}>
+      <Backdrop
+        open={isCreatingFlashcardSet || createBadgesLoading}
+        sx={{ zIndex: "modal" }}
+      >
         <CircularProgress />
       </Backdrop>
     </>

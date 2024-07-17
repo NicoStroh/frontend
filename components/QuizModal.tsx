@@ -1,6 +1,8 @@
 "use client";
+import { useParams } from "next/navigation";
 import { QuizModalEditMutation } from "@/__generated__/QuizModalEditMutation.graphql";
 import { QuizModalFragment$key } from "@/__generated__/QuizModalFragment.graphql";
+import { QuizModalCreateBadgesForQuizMutation } from "@/__generated__/QuizModalCreateBadgesForQuizMutation.graphql";
 import {
   CreateQuizInput,
   QuestionPoolingMode,
@@ -47,6 +49,8 @@ export function QuizModal({
   chapterId: string;
   _existingQuiz: QuizModalFragment$key | null;
 }) {
+  const { courseId } = useParams();
+
   const existingQuiz = useFragment(
     graphql`
       fragment QuizModalFragment on Quiz {
@@ -84,7 +88,7 @@ export function QuizModal({
           questionPoolingMode: existingQuiz.questionPoolingMode,
           requiredCorrectAnswers: existingQuiz.requiredCorrectAnswers,
           numberOfRandomlySelectedQuestions:
-            existingQuiz.numberOfRandomlySelectedQuestions,
+            existingQuiz.numberOfRandomlySelectedQuestions ?? 0,
         }
       : defaultInput
   );
@@ -164,6 +168,28 @@ export function QuizModal({
     }
   `);
 
+  const [createBadgesForQuiz, createBadgesLoading] =
+    useMutation<QuizModalCreateBadgesForQuizMutation>(graphql`
+      mutation QuizModalCreateBadgesForQuizMutation(
+        $quizUUID: UUID!
+        $name: String!
+        $courseUUID: UUID!
+      ) {
+        createBadgesForQuiz(
+          quizUUID: $quizUUID
+          name: $name
+          courseUUID: $courseUUID
+        ) {
+          badgeUUID
+          name
+          description
+          passingPercentage
+          quizUUID
+          flashCardSetUUID
+        }
+      }
+    `);
+
   const [error, setError] = useState<any>(null);
 
   const valid =
@@ -180,7 +206,7 @@ export function QuizModal({
             questionPoolingMode: existingQuiz.questionPoolingMode,
             requiredCorrectAnswers: existingQuiz.requiredCorrectAnswers,
             numberOfRandomlySelectedQuestions:
-              existingQuiz.numberOfRandomlySelectedQuestions,
+              existingQuiz.numberOfRandomlySelectedQuestions ?? 0,
           }
         : defaultInput
     );
@@ -204,7 +230,7 @@ export function QuizModal({
           },
           contentId: assessment!.id!,
           numberOfRandomlySelectedQuestions:
-            input.numberOfRandomlySelectedQuestions ?? 1,
+            input.numberOfRandomlySelectedQuestions ?? 0,
           questionPoolingMode: input.questionPoolingMode!,
           requiredCorrectAnswers: input.requiredCorrectAnswers!,
         },
@@ -225,15 +251,32 @@ export function QuizModal({
             numberOfRandomlySelectedQuestions:
               input.questionPoolingMode === "ORDERED"
                 ? null
-                : input.numberOfRandomlySelectedQuestions,
+                : input.numberOfRandomlySelectedQuestions ?? 0,
           },
           assessmentInput: {
             metadata: { ...metadata!, type: "QUIZ", chapterId },
             assessmentMetadata: assessmentMetadata!,
           },
         },
-        onCompleted() {
-          onClose();
+        onCompleted(data) {
+          // Call createBadgesForQuiz mutation after successfully creating a quiz
+          createBadgesForQuiz({
+            variables: {
+              quizUUID: data.createQuizAssessment.id,
+              name: metadata!.name,
+              courseUUID: courseId,
+            },
+            onCompleted(response) {
+              // Process the list of badges returned
+              console.log("Badges created:", response.createBadgesForQuiz);
+              onClose();
+            },
+            onError: (error) => {
+              console.error("Error creating badges:", error);
+              setError(error);
+              onClose();
+            },
+          });
         },
         onError: setError,
         updater(store, data) {
@@ -315,7 +358,7 @@ export function QuizModal({
 
             {input.questionPoolingMode === "RANDOM" && (
               <TextField
-                value={input.numberOfRandomlySelectedQuestions}
+                value={input.numberOfRandomlySelectedQuestions ?? ""}
                 onChange={(e) =>
                   setInput({
                     ...input,
@@ -327,7 +370,7 @@ export function QuizModal({
                 variant="outlined"
                 error={(input.numberOfRandomlySelectedQuestions ?? 0) <= 0}
                 helperText={
-                  input.requiredCorrectAnswers <= 0
+                  (input.numberOfRandomlySelectedQuestions ?? 0) <= 0
                     ? "Must be greater than 0"
                     : undefined
                 }
@@ -341,7 +384,7 @@ export function QuizModal({
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <LoadingButton
-          loading={loading || editLoading}
+          loading={loading || editLoading || createBadgesLoading}
           disabled={!valid}
           onClick={handleSubmit}
         >
