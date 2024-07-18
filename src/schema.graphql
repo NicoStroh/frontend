@@ -1342,11 +1342,23 @@ type UserBadge {
   passingPercentage: Int!
 }
 
+enum DominantPlayerType {
+  None
+  Achiever
+  Explorer
+  Socializer
+  Killer
+}
+
 type Query {
   # Get test questions
   test: [PlayerTypeTestQuestion!]!
   # Has the user taken the playertype test?
   userHasTakenTest(userUUID: UUID!): Boolean!
+  # Gets the UserBadges of the current user for the current course
+  getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
+  # Gets the dominant player type of the current user
+  usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
 
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.

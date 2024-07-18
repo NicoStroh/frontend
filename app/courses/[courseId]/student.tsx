@@ -1,5 +1,7 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
+import { studentUsersDominantPlayerTypeQuery } from "@/__generated__/studentUsersDominantPlayerTypeQuery.graphql";
+import { studentGetCoursesUserBadgesQuery } from "@/__generated__/studentGetCoursesUserBadgesQuery.graphql";
 import { Button, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
@@ -22,7 +24,14 @@ import { Info, Repeat } from "@mui/icons-material";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { useState } from "react";
+import {
+  JSXElementConstructor,
+  Key,
+  ReactElement,
+  ReactFragment,
+  ReactPortal,
+  useState,
+} from "react";
 import { StudentChapter } from "@/components/StudentChapter";
 import { LightTooltip } from "@/components/LightTooltip";
 import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
@@ -101,6 +110,36 @@ export default function StudentCoursePage() {
     { id }
   );
 
+  // Fetch user dominant player type
+  const { usersDominantPlayerType } =
+    useLazyLoadQuery<studentUsersDominantPlayerTypeQuery>(
+      graphql`
+        query studentUsersDominantPlayerTypeQuery($userUUID: UUID!) {
+          usersDominantPlayerType(userUUID: $userUUID)
+        }
+      `,
+      { userUUID: userId }
+    );
+
+  // Fetch user badges for the course
+  const { getCoursesUserBadges } =
+    useLazyLoadQuery<studentGetCoursesUserBadgesQuery>(
+      graphql`
+        query studentGetCoursesUserBadgesQuery(
+          $courseUUID: UUID!
+          $userUUID: UUID!
+        ) {
+          getCoursesUserBadges(courseUUID: $courseUUID, userUUID: $userUUID) {
+            userBadgeUUID
+            achieved
+            description
+            passingPercentage
+          }
+        }
+      `,
+      { courseUUID: id, userUUID: userId }
+    );
+
   const [leave] = useMutation<studentCourseLeaveMutation>(graphql`
     mutation studentCourseLeaveMutation($courseId: UUID!) {
       leaveCourse(courseId: $courseId) {
@@ -124,6 +163,88 @@ export default function StudentCoursePage() {
 
   // Extract course
   const course = coursesByIds[0];
+
+  const renderContentBasedOnPlayerType = () => {
+    switch (usersDominantPlayerType) {
+      case "None":
+        return (
+          <div className="mx-5 mt-12">
+            <Typography variant="h6" color="textSecondary">
+              To see content here, please take the player type test.
+            </Typography>
+          </div>
+        );
+      case "Achiever":
+        return (
+          <div className="mx-5 mt-12">
+            <Typography variant="h6" color="textSecondary">
+              Your Badges
+            </Typography>
+            <ul>
+              {getCoursesUserBadges.slice(0, 3).map((badge) => (
+                <li
+                  key={badge.description}
+                >{`achieved: ${badge.achieved}, description: ${badge.description}`}</li>
+              ))}
+            </ul>
+            <Link href={{ pathname: `${id}/badges` }}>
+              <Button variant="text" endIcon={<NavigateNextIcon />}>
+                All Badges
+              </Button>
+            </Link>
+          </div>
+        );
+      case "Explorer":
+        return (
+          <div className="mx-5 mt-12">
+            <Typography variant="h6" color="textSecondary">
+              Explorer not implemented yet.
+            </Typography>
+          </div>
+        );
+      case "Socializer":
+        return (
+          <div className="mx-5 mt-12">
+            <Typography variant="h6" color="textSecondary">
+              Socializer not implemented yet.
+            </Typography>
+          </div>
+        );
+      case "Killer":
+        return (
+          <div className="mx-5">
+            <TableContainer component={Paper} className="mt-12 mb-2">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Student Name</TableCell>
+                    <TableCell align="right">Power</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row) => (
+                    <TableRow
+                      key={row.name}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {row.name}
+                      </TableCell>
+                      <TableCell align="right">{row.power}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Link href={{ pathname: `${id}/scoreboard` }}>
+              <Button variant="text" endIcon={<NavigateNextIcon />}>
+                Full Scoreboard
+              </Button>
+            </Link>
+          </div>
+        );
+    }
+  };
 
   return (
     <main>
@@ -153,7 +274,7 @@ export default function StudentCoursePage() {
           onClick={() => {
             if (
               confirm(
-                "Do you really want to leave this course? You might loose the progress you've already made"
+                "Do you really want to leave this course? You might lose the progress you've already made"
               )
             ) {
               leave({
@@ -197,36 +318,7 @@ export default function StudentCoursePage() {
             </Button>
           </div>
         </div>
-        <div className="mx-5">
-          <TableContainer component={Paper} className="mt-12 mb-2">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Student Name</TableCell>
-                  <TableCell align="right">Power</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow
-                    key={row.name}
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="right">{row.power}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Link href={{ pathname: `${id}/scoreboard` }}>
-            <Button variant="text" endIcon={<NavigateNextIcon />}>
-              Full Scoreboard
-            </Button>
-          </Link>
-        </div>
+        {renderContentBasedOnPlayerType()}
       </div>
 
       <section className="mt-8 mb-20">
