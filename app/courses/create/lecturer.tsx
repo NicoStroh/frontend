@@ -1,5 +1,6 @@
 "use client";
 
+import { lecturerIdQuery } from "@/__generated__/lecturerIdQuery.graphql";
 import { lecturerCreateChapterMutation } from "@/__generated__/lecturerCreateChapterMutation.graphql";
 import {
   YearDivision,
@@ -27,7 +28,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { graphql, useMutation } from "react-relay";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 function TableRow({ label, value }: { label: string; value: string }) {
   return (
@@ -39,8 +40,8 @@ function TableRow({ label, value }: { label: string; value: string }) {
 }
 
 const addCourseMutation = graphql`
-  mutation lecturerAddCourseMutation($courseUUID: UUID!) {
-    addCourse(courseUUID: $courseUUID)
+  mutation lecturerAddCourseMutation($courseUUID: UUID!, $lecturerUUID: UUID!) {
+    addCourse(courseUUID: $courseUUID, lecturerUUID: $lecturerUUID)
   }
 `;
 
@@ -55,6 +56,17 @@ export default function NewCourse() {
     useState<YearDivision>("FIRST_SEMESTER");
   const [publish, setPublish] = useState(true);
   const [chapterCount, setChapterCount] = useState(12);
+
+  const { currentUserInfo } = useLazyLoadQuery<lecturerIdQuery>(
+    graphql`
+      query lecturerIdQuery {
+        currentUserInfo {
+          id
+        }
+      }
+    `,
+    {}
+  );
 
   const handleChange = (event: SelectChangeEvent<String>) => {
     setYearDivision(event.target.value as YearDivision);
@@ -138,6 +150,7 @@ export default function NewCourse() {
                 addCourse({
                   variables: {
                     courseUUID: response.createCourse.id,
+                    lecturerUUID: currentUserInfo.id,
                   },
                   onError: setError,
                   onCompleted() {
