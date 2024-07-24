@@ -177,9 +177,6 @@ export default function StudentCoursePage() {
       case "Achiever":
         return (
           <div className="mx-5 mt-12">
-            <Typography variant="h6" color="textSecondary">
-              Your Badges
-            </Typography>
             <ul>
               {getCoursesUserBadges.slice(0, 3).map((badge) => (
                 <li

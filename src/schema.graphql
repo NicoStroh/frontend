@@ -1072,7 +1072,7 @@ type Mutation {
   createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!,
     socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
   # Add course to gamification database
-  addCourse(courseUUID: UUID!): String!
+  addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
   # Add user to cours in gamification database
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
 
