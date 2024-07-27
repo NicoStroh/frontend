@@ -17,11 +17,13 @@ export function StudentFlashcardSet({
   emptyMessage,
   onError = () => {},
   onComplete = () => {},
+  courseId,
 }: {
   flashcards: FlashcardData[];
   emptyMessage: string;
   onError?: (error: any) => void;
   onComplete?: () => void;
+  courseId: string;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knew, setKnew] = useState(false);
@@ -49,25 +51,21 @@ export function StudentFlashcardSet({
       }
     `);
 
-  const [markBadgesAsAchievedIfPassedFlashCardSet] = useMutation(graphql`
-    mutation StudentFlashcardSetMarkBadgesAsAchievedIfPassedMutation(
+  const [finishFlashCardSet] = useMutation(graphql`
+    mutation finishFlashCardSet(
       $userUUID: UUID!
+      $courseUUID: UUID!
       $flashCardSetUUID: UUID!
       $correctAnswers: Int!
       $totalAnswers: Int!
     ) {
-      markBadgesAsAchievedIfPassedFlashCardSet(
+      finishFlashCardSet(
         userUUID: $userUUID
+        courseUUID: $courseUUID
         flashCardSetUUID: $flashCardSetUUID
         correctAnswers: $correctAnswers
         totalAnswers: $totalAnswers
-      ) {
-        userBadgeUUID
-        userUUID
-        badgeUUID
-        description
-        passingPercentage
-      }
+      )
     }
   `);
 
@@ -93,9 +91,10 @@ export function StudentFlashcardSet({
           setCurrentIndex(currentIndex + 1);
           setKnew(false);
         } else {
-          markBadgesAsAchievedIfPassedFlashCardSet({
+          finishFlashCardSet({
             variables: {
               userUUID: currentUserInfo.id,
+              courseUUID: courseId,
               flashCardSetUUID: currentFlashcard.id,
               correctAnswers: correctAnswers + (knew ? 1 : 0),
               totalAnswers: flashcards.length,

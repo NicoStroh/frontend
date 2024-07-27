@@ -41,6 +41,7 @@ export default function StudentDueFlashcards() {
         emptyMessage="No flashcards to repeat."
         onComplete={() => router.push(`/courses/${courseId}`)}
         onError={setError}
+        courseId={courseId}
       />
     </main>
   );

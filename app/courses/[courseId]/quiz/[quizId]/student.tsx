@@ -7,7 +7,7 @@ import {
   studentQuizTrackCompletedMutation,
   studentQuizTrackCompletedMutation$data,
 } from "@/__generated__/studentQuizTrackCompletedMutation.graphql";
-import { studentQuizMarkBadgesAsAchievedMutation } from "@/__generated__/studentQuizMarkBadgesAsAchievedMutation.graphql";
+import { studentQuizFinishQuizMutation } from "@/__generated__/studentQuizFinishQuizMutation.graphql";
 import { ContentTags } from "@/components/ContentTags";
 import { FormErrors } from "@/components/FormErrors";
 import { Heading } from "@/components/Heading";
@@ -80,27 +80,23 @@ export default function StudentQuiz() {
       `
     );
 
-  const [markBadgesAsAchieved, markBadgesLoading] =
-    useMutation<studentQuizMarkBadgesAsAchievedMutation>(
+  const [finishQuiz, markBadgesLoading] =
+    useMutation<studentQuizFinishQuizMutation>(
       graphql`
-        mutation studentQuizMarkBadgesAsAchievedMutation(
+        mutation studentQuizFinishQuizMutation(
           $userUUID: UUID!
+          $courseUUID: UUID!
           $quizUUID: UUID!
           $correctAnswers: Int!
           $totalAnswers: Int!
         ) {
-          markBadgesAsAchievedIfPassedQuiz(
+          finishQuiz(
             userUUID: $userUUID
+            courseUUID: $courseUUID
             quizUUID: $quizUUID
             correctAnswers: $correctAnswers
             totalAnswers: $totalAnswers
-          ) {
-            userBadgeUUID
-            userUUID
-            badgeUUID
-            description
-            passingPercentage
-          }
+          )
         }
       `
     );
@@ -199,10 +195,11 @@ export default function StudentQuiz() {
           ].filter((answer) => answer.correct).length;
           const totalAnswers = quiz.selectedQuestions.length;
 
-          // Mark badges as achieved
-          markBadgesAsAchieved({
+          // Mark quiz as finisched
+          finishQuiz({
             variables: {
               userUUID: currentUserInfo.id,
+              courseUUID: courseId,
               quizUUID: quizId!,
               correctAnswers,
               totalAnswers,

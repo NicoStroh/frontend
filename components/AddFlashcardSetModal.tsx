@@ -12,7 +12,7 @@ import { useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 
 import { AddFlashcardSetModalFragment$key } from "@/__generated__/AddFlashcardSetModalFragment.graphql";
-import { AddFlashcardSetModalCreateBadgesForFlashCardSetMutation } from "@/__generated__/AddFlashcardSetModalCreateBadgesForFlashCardSetMutation.graphql";
+import { AddFlashcardSetModalCreateFlashCardSetMutation } from "@/__generated__/AddFlashcardSetModalCreateFlashCardSetMutation.graphql";
 import {
   AddFlashcardSetModalMutation,
   ContentType,
@@ -76,25 +76,19 @@ export function AddFlashcardSetModal({
       }
     `);
 
-  const [createBadgesForFlashCardSet] =
-    useMutation<AddFlashcardSetModalCreateBadgesForFlashCardSetMutation>(
+  const [createFlashCardSet] =
+    useMutation<AddFlashcardSetModalCreateFlashCardSetMutation>(
       graphql`
-        mutation AddFlashcardSetModalCreateBadgesForFlashCardSetMutation(
+        mutation AddFlashcardSetModalCreateFlashCardSetMutation(
           $flashCardSetUUID: UUID!
           $name: String!
           $courseUUID: UUID!
         ) {
-          createBadgesForFlashCardSet(
+          createFlashCardSet(
             flashCardSetUUID: $flashCardSetUUID
             name: $name
             courseUUID: $courseUUID
-          ) {
-            badgeUUID
-            name
-            description
-            passingPercentage
-            flashCardSetUUID
-          }
+          )
         }
       `
     );
@@ -127,7 +121,7 @@ export function AddFlashcardSetModal({
       onCompleted(response) {
         const flashCardSetUUID = response!.createFlashcardSetAssessment!.id;
         setCreateBadgesLoading(true);
-        createBadgesForFlashCardSet({
+        createFlashCardSet({
           variables: {
             flashCardSetUUID,
             name: metadata!.name,
