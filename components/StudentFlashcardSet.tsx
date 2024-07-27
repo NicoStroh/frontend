@@ -1,5 +1,6 @@
 import { StudentFlashcard$key } from "@/__generated__/StudentFlashcard.graphql";
 import { StudentFlashcardSetLogProgressMutation } from "@/__generated__/StudentFlashcardSetLogProgressMutation.graphql";
+import { StudentFlashcardSetFinishFlashCardSetMutation } from "@/__generated__/StudentFlashcardSetFinishFlashCardSetMutation.graphql";
 import { Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -51,23 +52,24 @@ export function StudentFlashcardSet({
       }
     `);
 
-  const [finishFlashCardSet] = useMutation(graphql`
-    mutation finishFlashCardSet(
-      $userUUID: UUID!
-      $courseUUID: UUID!
-      $flashCardSetUUID: UUID!
-      $correctAnswers: Int!
-      $totalAnswers: Int!
-    ) {
-      finishFlashCardSet(
-        userUUID: $userUUID
-        courseUUID: $courseUUID
-        flashCardSetUUID: $flashCardSetUUID
-        correctAnswers: $correctAnswers
-        totalAnswers: $totalAnswers
-      )
-    }
-  `);
+  const [finishFlashCardSet] =
+    useMutation<StudentFlashcardSetFinishFlashCardSetMutation>(graphql`
+      mutation StudentFlashcardSetFinishFlashCardSetMutation(
+        $userUUID: UUID!
+        $courseUUID: UUID!
+        $flashCardSetUUID: UUID!
+        $correctAnswers: Int!
+        $totalAnswers: Int!
+      ) {
+        finishFlashCardSet(
+          userUUID: $userUUID
+          courseUUID: $courseUUID
+          flashCardSetUUID: $flashCardSetUUID
+          correctAnswers: $correctAnswers
+          totalAnswers: $totalAnswers
+        )
+      }
+    `);
 
   if (flashcards.length === 0) {
     return <DisplayError message={emptyMessage} />;
