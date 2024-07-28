@@ -1067,17 +1067,18 @@ type Mutation {
   # Submit the answer for a question of the bartle test
   submitAnswer(questionId: Int!, answer: Boolean!): String
   # Test evaluation
-  evaluateTest(userUUID: UUID!): ShortBartleTestResult!
+  evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
   # Save test result in gamification database
   createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!,
-    socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
+    socializerPercentage: Int!, killerPercentage: Int!): String
   # Add course to gamification database
   addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
   # Add user to cours in gamification database
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
-
+  # Submit result to gamification service to check if gamification element was achieved
   finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
   finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
+  # Creates gamification elements (badges / quests) for quiz / flashcardset
   createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): String
   createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): String
 
