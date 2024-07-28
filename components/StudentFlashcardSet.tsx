@@ -1,5 +1,6 @@
 import { StudentFlashcard$key } from "@/__generated__/StudentFlashcard.graphql";
 import { StudentFlashcardSetLogProgressMutation } from "@/__generated__/StudentFlashcardSetLogProgressMutation.graphql";
+import { StudentFlashcardSetFinishFlashCardSetMutation } from "@/__generated__/StudentFlashcardSetFinishFlashCardSetMutation.graphql";
 import { Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -17,11 +18,13 @@ export function StudentFlashcardSet({
   emptyMessage,
   onError = () => {},
   onComplete = () => {},
+  courseId,
 }: {
   flashcards: FlashcardData[];
   emptyMessage: string;
   onError?: (error: any) => void;
   onComplete?: () => void;
+  courseId: string;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knew, setKnew] = useState(false);
@@ -49,27 +52,24 @@ export function StudentFlashcardSet({
       }
     `);
 
-  const [markBadgesAsAchievedIfPassedFlashCardSet] = useMutation(graphql`
-    mutation StudentFlashcardSetMarkBadgesAsAchievedIfPassedMutation(
-      $userUUID: UUID!
-      $flashCardSetUUID: UUID!
-      $correctAnswers: Int!
-      $totalAnswers: Int!
-    ) {
-      markBadgesAsAchievedIfPassedFlashCardSet(
-        userUUID: $userUUID
-        flashCardSetUUID: $flashCardSetUUID
-        correctAnswers: $correctAnswers
-        totalAnswers: $totalAnswers
+  const [finishFlashCardSet] =
+    useMutation<StudentFlashcardSetFinishFlashCardSetMutation>(graphql`
+      mutation StudentFlashcardSetFinishFlashCardSetMutation(
+        $userUUID: UUID!
+        $courseUUID: UUID!
+        $flashCardSetUUID: UUID!
+        $correctAnswers: Int!
+        $totalAnswers: Int!
       ) {
-        userBadgeUUID
-        userUUID
-        badgeUUID
-        description
-        passingPercentage
+        finishFlashCardSet(
+          userUUID: $userUUID
+          courseUUID: $courseUUID
+          flashCardSetUUID: $flashCardSetUUID
+          correctAnswers: $correctAnswers
+          totalAnswers: $totalAnswers
+        )
       }
-    }
-  `);
+    `);
 
   if (flashcards.length === 0) {
     return <DisplayError message={emptyMessage} />;
@@ -93,9 +93,10 @@ export function StudentFlashcardSet({
           setCurrentIndex(currentIndex + 1);
           setKnew(false);
         } else {
-          markBadgesAsAchievedIfPassedFlashCardSet({
+          finishFlashCardSet({
             variables: {
               userUUID: currentUserInfo.id,
+              courseUUID: courseId,
               flashCardSetUUID: currentFlashcard.id,
               correctAnswers: correctAnswers + (knew ? 1 : 0),
               totalAnswers: flashcards.length,

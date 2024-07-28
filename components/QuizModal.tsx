@@ -2,7 +2,7 @@
 import { useParams } from "next/navigation";
 import { QuizModalEditMutation } from "@/__generated__/QuizModalEditMutation.graphql";
 import { QuizModalFragment$key } from "@/__generated__/QuizModalFragment.graphql";
-import { QuizModalCreateBadgesForQuizMutation } from "@/__generated__/QuizModalCreateBadgesForQuizMutation.graphql";
+import { QuizModalCreateQuizMutation } from "@/__generated__/QuizModalCreateQuizMutation.graphql";
 import {
   CreateQuizInput,
   QuestionPoolingMode,
@@ -168,25 +168,14 @@ export function QuizModal({
     }
   `);
 
-  const [createBadgesForQuiz, createBadgesLoading] =
-    useMutation<QuizModalCreateBadgesForQuizMutation>(graphql`
-      mutation QuizModalCreateBadgesForQuizMutation(
+  const [createQuiz, createBadgesLoading] =
+    useMutation<QuizModalCreateQuizMutation>(graphql`
+      mutation QuizModalCreateQuizMutation(
         $quizUUID: UUID!
         $name: String!
         $courseUUID: UUID!
       ) {
-        createBadgesForQuiz(
-          quizUUID: $quizUUID
-          name: $name
-          courseUUID: $courseUUID
-        ) {
-          badgeUUID
-          name
-          description
-          passingPercentage
-          quizUUID
-          flashCardSetUUID
-        }
+        createQuiz(quizUUID: $quizUUID, name: $name, courseUUID: $courseUUID)
       }
     `);
 
@@ -259,20 +248,18 @@ export function QuizModal({
           },
         },
         onCompleted(data) {
-          // Call createBadgesForQuiz mutation after successfully creating a quiz
-          createBadgesForQuiz({
+          // Call createQuiz (gamification_service) mutation after successfully creating a quiz
+          createQuiz({
             variables: {
               quizUUID: data.createQuizAssessment.id,
               name: metadata!.name,
               courseUUID: courseId,
             },
             onCompleted(response) {
-              // Process the list of badges returned
-              console.log("Badges created:", response.createBadgesForQuiz);
               onClose();
             },
             onError: (error) => {
-              console.error("Error creating badges:", error);
+              console.error("Error creating quiz:", error);
               setError(error);
               onClose();
             },

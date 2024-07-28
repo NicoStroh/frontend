@@ -1076,10 +1076,10 @@ type Mutation {
   # Add user to cours in gamification database
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
 
-  markBadgesAsAchievedIfPassedQuiz(userUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
-  markBadgesAsAchievedIfPassedFlashCardSet(userUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
-  createBadgesForQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): [Badge!]!
-  createBadgesForFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): [Badge!]!
+  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
+  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
+  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): String
+  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): String
 
 
   # Modify Content
