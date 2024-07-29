@@ -1067,17 +1067,18 @@ type Mutation {
   # Submit the answer for a question of the bartle test
   submitAnswer(questionId: Int!, answer: Boolean!): String
   # Test evaluation
-  evaluateTest(userUUID: UUID!): ShortBartleTestResult!
+  evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
   # Save test result in gamification database
   createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!,
-    socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
+    socializerPercentage: Int!, killerPercentage: Int!): String
   # Add course to gamification database
   addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
   # Add user to cours in gamification database
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
-
+  # Submit result to gamification service to check if gamification element was achieved
   finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
   finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
+  # Creates gamification elements (badges / quests) for quiz / flashcardset
   createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): String
   createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): String
 
@@ -1301,6 +1302,14 @@ type PublicUserInfo {
 }
 
 # Nico
+type ShortBartleTestResultEntity {
+  userHasTakenTest: Boolean!
+  achieverPercentage: Int!
+  explorerPercentage: Int!
+  socializerPercentage: Int!
+  killerPercentage: Int!
+}
+
 type PlayerTypeTestQuestion {
   id: ID!
   text: String!
@@ -1309,28 +1318,12 @@ type PlayerTypeTestQuestion {
   selectedOption: Boolean!
 }
 
-type ShortBartleTestResult {
-  achieverPercentage: Int!
-  explorerPercentage: Int!
-  socializerPercentage: Int!
-  killerPercentage: Int!
-}
-
-type PlayerType {
-  userUUID: UUID!
-  achieverPercentage: Int!
-  explorerPercentage: Int!
-  socializerPercentage: Int!
-  killerPercentage: Int!
-}
-
-type Badge {
-  badgeUUID: UUID!
-  name: String!
-  description: String
-  passingPercentage: Int!
-  quizUUID: UUID
-  flashCardSetUUID: UUID
+enum DominantPlayerType {
+  None
+  Achiever
+  Explorer
+  Socializer
+  Killer
 }
 
 type UserBadge {
@@ -1342,12 +1335,23 @@ type UserBadge {
   passingPercentage: Int!
 }
 
-enum DominantPlayerType {
-  None
-  Achiever
-  Explorer
-  Socializer
-  Killer
+type UserQuest {
+  userQuestUUID: UUID!
+  userUUID: UUID!
+  questUUID: UUID!
+  quizUUID: UUID
+  flashCardSetUUID: UUID
+  finished: Boolean!
+  description: String!
+}
+
+type UserQuestChain {
+  userQuestChainUUID: UUID!
+  userQuests: [UserQuest!]!
+  questChainUUID: UUID!
+  courseUUID: UUID!
+  currentUserQuestIndex: Int!
+  finished: Boolean!
 }
 
 type Query {
@@ -1359,6 +1363,10 @@ type Query {
   getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
   # Gets the dominant player type of the current user
   usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
+  # Gets the current quest of the quest chain for the user and the course
+  getCurrentUserQuest(userUUID: UUID!, courseUUID: UUID!): UserQuest!
+  # Gets the total questchain for the user and the course
+  getUserQuestChain(userUUID: UUID!, courseUUID: UUID!): UserQuestChain!
 
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
