@@ -19,12 +19,14 @@ export function StudentFlashcardSet({
   onError = () => {},
   onComplete = () => {},
   courseId,
+  flashcardSetId,
 }: {
   flashcards: FlashcardData[];
   emptyMessage: string;
   onError?: (error: any) => void;
   onComplete?: () => void;
   courseId: string;
+  flashcardSetId: string;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knew, setKnew] = useState(false);
@@ -97,7 +99,7 @@ export function StudentFlashcardSet({
             variables: {
               userUUID: currentUserInfo.id,
               courseUUID: courseId,
-              flashCardSetUUID: currentFlashcard.id,
+              flashCardSetUUID: flashcardSetId,
               correctAnswers: correctAnswers + (knew ? 1 : 0),
               totalAnswers: flashcards.length,
             },

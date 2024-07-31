@@ -10,7 +10,7 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 
 export default function StudentDueFlashcards() {
   // Get course id from url
-  const { courseId } = useParams();
+  const { flashcardSetId, courseId } = useParams();
   const router = useRouter();
   const [error, setError] = useState<any>(null);
 
@@ -42,6 +42,7 @@ export default function StudentDueFlashcards() {
         onComplete={() => router.push(`/courses/${courseId}`)}
         onError={setError}
         courseId={courseId}
+        flashcardSetId={flashcardSetId}
       />
     </main>
   );

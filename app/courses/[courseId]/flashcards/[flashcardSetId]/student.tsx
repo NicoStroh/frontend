@@ -68,6 +68,7 @@ export default function StudentFlashcards() {
         onComplete={() => router.push(`/courses/${courseId}`)}
         onError={setError}
         courseId={courseId}
+        flashcardSetId={flashcardSetId}
       />
     </main>
   );

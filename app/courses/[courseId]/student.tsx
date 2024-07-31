@@ -2,6 +2,7 @@
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
 import { studentUsersDominantPlayerTypeQuery } from "@/__generated__/studentUsersDominantPlayerTypeQuery.graphql";
 import { studentGetCoursesUserBadgesQuery } from "@/__generated__/studentGetCoursesUserBadgesQuery.graphql";
+import { studentGetCurrentUserQuestQuery } from "@/__generated__/studentGetCurrentUserQuestQuery.graphql";
 import { Button, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
@@ -140,6 +141,25 @@ export default function StudentCoursePage() {
       { courseUUID: id, userUUID: userId }
     );
 
+  // Fetch current userquest for the course
+  const { getCurrentUserQuest } =
+    useLazyLoadQuery<studentGetCurrentUserQuestQuery>(
+      graphql`
+        query studentGetCurrentUserQuestQuery(
+          $userUUID: UUID!
+          $courseUUID: UUID!
+        ) {
+          getCurrentUserQuest(userUUID: $userUUID, courseUUID: $courseUUID) {
+            questUUID
+            finished
+            description
+            level
+          }
+        }
+      `,
+      { courseUUID: id, userUUID: userId }
+    );
+
   const [leave] = useMutation<studentCourseLeaveMutation>(graphql`
     mutation studentCourseLeaveMutation($courseId: UUID!) {
       leaveCourse(courseId: $courseId) {
@@ -179,9 +199,9 @@ export default function StudentCoursePage() {
           <div className="mx-5 mt-12">
             <ul>
               {getCoursesUserBadges.slice(0, 3).map((badge) => (
-                <li
-                  key={badge.description}
-                >{`achieved: ${badge.achieved}, description: ${badge.description}`}</li>
+                <li key={badge.userBadgeUUID}>{`${badge.description}: ${
+                  badge.achieved ? "Achieved" : "Not achieved"
+                }`}</li>
               ))}
             </ul>
             <Link href={{ pathname: `${id}/badges` }}>
@@ -194,9 +214,22 @@ export default function StudentCoursePage() {
       case "Explorer":
         return (
           <div className="mx-5 mt-12">
-            <Typography variant="h6" color="textSecondary">
-              Explorer not implemented yet.
-            </Typography>
+            <ul>
+              <li key={getCurrentUserQuest.questUUID}>
+                {getCurrentUserQuest.finished ? "" : "Your current quest:"}
+                <br />
+                {`${getCurrentUserQuest.description}`}
+                <br />
+                {getCurrentUserQuest.finished
+                  ? ""
+                  : "Your level: ${getCurrentUserQuest.level}"}
+              </li>
+            </ul>
+            <Link href={{ pathname: `${id}/quests` }}>
+              <Button variant="text" endIcon={<NavigateNextIcon />}>
+                All Quests
+              </Button>
+            </Link>
           </div>
         );
       case "Socializer":
