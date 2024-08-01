@@ -65,23 +65,23 @@ function _QuestsPage() {
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
+              <TableCell>Level</TableCell>
               <TableCell>Quest</TableCell>
               <TableCell>Finished</TableCell>
-              <TableCell>Level</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {getUserQuestChain.quests.map((quest) => (
               <TableRow key={quest.questUUID}>
+                <TableCell>{quest.level}</TableCell>
                 <TableCell>
                   {quest.level > getUserQuestChain.userLevel
                     ? "Finish the quests above to see this quest!"
                     : quest.description}
                 </TableCell>
                 <TableCell>
-                  {quest.finished ? "Finished" : "Not finished"}
+                  {quest.finished ? <span>✔️</span> : <span>❌</span>}
                 </TableCell>
-                <TableCell>{quest.level}</TableCell>
               </TableRow>
             ))}
           </TableBody>
