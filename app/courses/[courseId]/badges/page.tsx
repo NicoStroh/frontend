@@ -57,17 +57,18 @@ function _BadgesPage() {
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              <TableCell>Badge ID</TableCell>
               <TableCell>Achieved</TableCell>
               <TableCell>Description</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {getCoursesUserBadges.map((badge) => (
-              <TableRow key={badge.userBadgeUUID}>
-                <TableCell>{badge.userBadgeUUID}</TableCell>
-                <TableCell>
-                  {badge.achieved ? "Achieved" : "Not Achieved"}
+              <TableRow
+                key={badge.userBadgeUUID}
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {badge.achieved ? <span>✔️</span> : <span>❌</span>}
                 </TableCell>
                 <TableCell>{badge.description}</TableCell>
               </TableRow>

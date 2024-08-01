@@ -46,6 +46,38 @@ function createData(name: string, power: number) {
   return { name, power };
 }
 
+const styles = {
+  questItem: {
+    padding: "10px",
+    margin: "10px 0",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+    backgroundColor: "#f9f9f9",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    listStyleType: "none",
+  },
+  status: {
+    fontWeight: "bold",
+    color: "#333",
+  },
+  finished: {
+    fontWeight: "bold",
+    color: "green",
+  },
+  description: {
+    display: "block",
+    marginTop: "5px",
+    fontSize: "16px",
+    color: "#555",
+  },
+  level: {
+    display: "block",
+    marginTop: "5px",
+    fontSize: "14px",
+    color: "#777",
+  },
+};
+
 export default function StudentCoursePage() {
   // Get course id from url
   const { courseId: id } = useParams();
@@ -196,14 +228,30 @@ export default function StudentCoursePage() {
         );
       case "Achiever":
         return (
-          <div className="mx-5 mt-12">
-            <ul>
-              {getCoursesUserBadges.slice(0, 3).map((badge) => (
-                <li key={badge.userBadgeUUID}>{`${badge.description}: ${
-                  badge.achieved ? "Achieved" : "Not achieved"
-                }`}</li>
-              ))}
-            </ul>
+          <div className="mx-5">
+            <TableContainer component={Paper} className="mt-12 mb-2">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Achieved</TableCell>
+                    <TableCell>Description</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {getCoursesUserBadges.slice(0, 2).map((badge) => (
+                    <TableRow
+                      key={badge.userBadgeUUID}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {badge.achieved ? <span>✔️</span> : <span>❌</span>}
+                      </TableCell>
+                      <TableCell>{badge.description}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
             <Link href={{ pathname: `${id}/badges` }}>
               <Button variant="text" endIcon={<NavigateNextIcon />}>
                 All Badges
@@ -213,16 +261,23 @@ export default function StudentCoursePage() {
         );
       case "Explorer":
         return (
-          <div className="mx-5 mt-12">
+          <div className="mx-5 mt-10">
             <ul>
-              <li key={getCurrentUserQuest.questUUID}>
-                {getCurrentUserQuest.finished ? "" : "Your current quest:"}
-                <br />
-                {`${getCurrentUserQuest.description}`}
-                <br />
-                {getCurrentUserQuest.finished
-                  ? ""
-                  : "Your level: ${getCurrentUserQuest.level}"}
+              <li key={getCurrentUserQuest.questUUID} style={styles.questItem}>
+                {getCurrentUserQuest.finished ? (
+                  <span style={styles.finished}>Quest Completed!</span>
+                ) : (
+                  <>
+                    <span style={styles.status}>Your current quest:</span>
+                    <br />
+                    <span style={styles.description}>
+                      {getCurrentUserQuest.description}
+                    </span>
+                    <span style={styles.level}>
+                      Your level: {getCurrentUserQuest.level}
+                    </span>
+                  </>
+                )}
               </li>
             </ul>
             <Link href={{ pathname: `${id}/quests` }}>
