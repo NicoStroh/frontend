@@ -238,7 +238,7 @@ export default function StudentCoursePage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {getCoursesUserBadges.slice(0, 2).map((badge) => (
+                  {getCoursesUserBadges.slice(0, 3).map((badge) => (
                     <TableRow
                       key={badge.userBadgeUUID}
                       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -265,7 +265,9 @@ export default function StudentCoursePage() {
             <ul>
               <li key={getCurrentUserQuest.questUUID} style={styles.questItem}>
                 {getCurrentUserQuest.finished ? (
-                  <span style={styles.finished}>Quest Completed!</span>
+                  <span style={styles.finished}>
+                    You finished all quests for this course!
+                  </span>
                 ) : (
                   <>
                     <span style={styles.status}>Your current quest:</span>
