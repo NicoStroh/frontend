@@ -1064,20 +1064,35 @@ type MultipleChoiceQuestion implements Question {
 }
 
 type Mutation {
-  # Submit the answer for a question of the bartle test
-  submitAnswer(questionId: Int!, answer: Boolean!): String
-  # Test evaluation
-  evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
+  ### Gamification API
   # Add course to gamification database
   addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
-  # Add user to cours in gamification database
+  # Add user to course in gamification database
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
-  # Submit result to gamification service to check if gamification element was achieved
-  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
-  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
+
   # Creates gamification elements (badges / quests) for quiz / flashcardset
-  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): String
-  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): String
+  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): String!
+  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): String!
+
+  # Deletes gamification elements of the course
+  deleteBadgesAndQuestsOfCourse(courseUUID: UUID!): String!
+  # Deletes gamification elements for quiz / flashcardset
+  deleteBadgesAndQuestOfFlashCardSet(flashcardSetUUID: UUID!, courseUUID: UUID!): String!
+  deleteBadgesAndQuestOfQuiz(quizUUID: UUID!, courseUUID: UUID!): String!
+  ### End of Gamification API
+
+  # Test evaluation
+  evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
+
+  # Submit result to gamification service to check if gamification element was achieved
+  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String!
+  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String!
+
+  # Removes the user from the course in the gamification database
+  removeUserFromCourse(userUUID: UUID!, courseUUID: UUID!): String!
+
+  # Submit the answer for a question of the bartle test
+  submitAnswer(questionId: Int!, answer: Boolean!): String!
 
 
   # Modify Content
@@ -1351,18 +1366,21 @@ type UserQuestChain {
 }
 
 type Query {
+  ### Gamification API
+  # Gets the users badges for the course
+  getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
+  # Gets the current quest of the user for the course
+  getCurrentUserQuest(userUUID: UUID!, courseUUID: UUID!): Quest!
+  # Gets the whole questchain of the user for the course
+  getUserQuestChain(userUUID: UUID!, courseUUID: UUID!): UserQuestChain!
+  ### End of Gamification API
+
   # Get test questions
   test: [PlayerTypeTestQuestion!]!
   # Has the user taken the playertype test?
   userHasTakenTest(userUUID: UUID!): Boolean!
-  # Gets the UserBadges of the current user for the current course
-  getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
   # Gets the dominant player type of the current user
   usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
-  # Gets the current quest of the quest chain for the user and the course
-  getCurrentUserQuest(userUUID: UUID!, courseUUID: UUID!): Quest!
-  # Gets the total questchain for the user and the course
-  getUserQuestChain(userUUID: UUID!, courseUUID: UUID!): UserQuestChain!
 
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
