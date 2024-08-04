@@ -3,6 +3,7 @@ import { lecturerDeleteFlashcardContentMutation } from "@/__generated__/lecturer
 import { lecturerDeleteFlashcardMutation } from "@/__generated__/lecturerDeleteFlashcardMutation.graphql";
 import { lecturerEditFlashcardSetMutation } from "@/__generated__/lecturerEditFlashcardSetMutation.graphql";
 import { lecturerEditFlashcardsQuery } from "@/__generated__/lecturerEditFlashcardsQuery.graphql";
+import { lecturerDeleteBadgesAndQuestMutation } from "@/__generated__/lecturerDeleteBadgesAndQuestMutation.graphql";
 import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentTags } from "@/components/ContentTags";
@@ -114,7 +115,25 @@ export default function LecturerFlashcards() {
         }
       }
     `);
-  const isUpdating = isAddingFlashcard || isUpdatingFlashcardSet || isDeleting;
+
+  const [deleteBadgesAndQuest, deletingBadgesAndQuest] =
+    useMutation<lecturerDeleteBadgesAndQuestMutation>(graphql`
+      mutation lecturerDeleteBadgesAndQuestMutation(
+        $flashcardSetUUID: UUID!
+        $courseUUID: UUID!
+      ) {
+        deleteBadgesAndQuestOfFlashCardSet(
+          flashcardSetUUID: $flashcardSetUUID
+          courseUUID: $courseUUID
+        )
+      }
+    `);
+
+  const isUpdating =
+    isAddingFlashcard ||
+    isUpdatingFlashcardSet ||
+    isDeleting ||
+    deletingBadgesAndQuest;
 
   if (contentsByIds.length == 0) {
     return <PageError message="No flashcards found with given id." />;
@@ -222,6 +241,14 @@ export default function LecturerFlashcards() {
                     variables: { id: content.id },
                     onCompleted() {
                       router.push(`/courses/${courseId}`);
+
+                      deleteBadgesAndQuest({
+                        variables: {
+                          flashcardSetUUID: flashcardSetId,
+                          courseUUID: courseId,
+                        },
+                        onError: setError,
+                      });
                     },
                     onError(error) {
                       setError(error);

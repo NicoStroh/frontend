@@ -17,6 +17,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
+import { studentRemoveUserFromCourseMutation } from "@/__generated__/studentRemoveUserFromCourseMutation.graphql";
 import { FormErrors } from "@/components/FormErrors";
 import { PageError } from "@/components/PageError";
 import { RewardScores } from "@/components/RewardScores";
@@ -201,6 +202,16 @@ export default function StudentCoursePage() {
     }
   `);
 
+  const [removeUserFromCourse] =
+    useMutation<studentRemoveUserFromCourseMutation>(graphql`
+      mutation studentRemoveUserFromCourseMutation(
+        $userUUID: UUID!
+        $courseUUID: UUID!
+      ) {
+        removeUserFromCourse(userUUID: $userUUID, courseUUID: $courseUUID)
+      }
+    `);
+
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
@@ -381,7 +392,16 @@ export default function StudentCoursePage() {
                   );
                 },
                 onCompleted() {
-                  router.push("/courses?leftCourse=true");
+                  removeUserFromCourse({
+                    variables: {
+                      userUUID: userId,
+                      courseUUID: id,
+                    },
+                    onCompleted() {
+                      router.push("/courses?leftCourse=true");
+                    },
+                    onError: setError,
+                  });
                 },
               });
             }

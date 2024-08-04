@@ -84,6 +84,7 @@ export default function LecturerQuiz() {
             <DeleteQuizButton
               chapterId={content.metadata.chapterId}
               contentId={content.id}
+              courseId={courseId}
               onCompleted={() => router.push(`/courses/${courseId}`)}
               onError={setError}
             />

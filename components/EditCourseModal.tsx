@@ -19,6 +19,7 @@ import { graphql, useFragment, useMutation } from "react-relay";
 import { EditCourseModalDeleteMutation } from "@/__generated__/EditCourseModalDeleteMutation.graphql";
 import { EditCourseModalFragment$key } from "@/__generated__/EditCourseModalFragment.graphql";
 import { EditCourseModalMutation } from "@/__generated__/EditCourseModalMutation.graphql";
+import { EditCourseModalDeleteBadgesAndQuestsOfCourseMutation } from "@/__generated__/EditCourseModalDeleteBadgesAndQuestsOfCourseMutation.graphql";
 import { Form, FormSection } from "./Form";
 
 export function EditCourseModal({
@@ -61,6 +62,16 @@ export function EditCourseModal({
       deleteCourse(id: $id)
     }
   `);
+
+  const [deleteBadgesAndQuests, deletingBadgesAndQuests] =
+    useMutation<EditCourseModalDeleteBadgesAndQuestsOfCourseMutation>(graphql`
+      mutation EditCourseModalDeleteBadgesAndQuestsOfCourseMutation(
+        $courseUUID: UUID!
+      ) {
+        deleteBadgesAndQuestsOfCourse(courseUUID: $courseUUID)
+      }
+    `);
+
   const [title, setTitle] = useState(course.title);
   const [description, setDescription] = useState(course.description);
   const [startDate, setStartDate] = useState<Dayjs | null>(
@@ -114,7 +125,15 @@ export function EditCourseModal({
         setError(error);
       },
       onCompleted() {
-        router.push("/");
+        deleteBadgesAndQuests({
+          variables: { courseUUID: course.id },
+          onCompleted() {
+            router.push("/");
+          },
+          onError(error) {
+            setError(error);
+          },
+        });
       },
       updater(store) {
         try {
@@ -200,7 +219,10 @@ export function EditCourseModal({
               />
             </FormSection>
           </Form>
-          <Backdrop open={isUpdating} sx={{ zIndex: "modal" }}>
+          <Backdrop
+            open={isUpdating || deletingBadgesAndQuests}
+            sx={{ zIndex: "modal" }}
+          >
             <CircularProgress />
           </Backdrop>
         </DialogContent>
