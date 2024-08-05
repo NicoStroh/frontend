@@ -4,6 +4,7 @@ import { lecturerDeleteFlashcardMutation } from "@/__generated__/lecturerDeleteF
 import { lecturerEditFlashcardSetMutation } from "@/__generated__/lecturerEditFlashcardSetMutation.graphql";
 import { lecturerEditFlashcardsQuery } from "@/__generated__/lecturerEditFlashcardsQuery.graphql";
 import { lecturerDeleteBadgesAndQuestMutation } from "@/__generated__/lecturerDeleteBadgesAndQuestMutation.graphql";
+import { lecturerEditFlashcardSetNameMutation } from "@/__generated__/lecturerEditFlashcardSetNameMutation.graphql";
 import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentTags } from "@/components/ContentTags";
@@ -129,6 +130,21 @@ export default function LecturerFlashcards() {
       }
     `);
 
+  const [editFlashcardSetName] =
+    useMutation<lecturerEditFlashcardSetNameMutation>(graphql`
+      mutation lecturerEditFlashcardSetNameMutation(
+        $flashcardSetUUID: UUID!
+        $courseUUID: UUID!
+        $name: String!
+      ) {
+        editFlashcardSetName(
+          flashcardSetUUID: $flashcardSetUUID
+          courseUUID: $courseUUID
+          name: $name
+        )
+      }
+    `);
+
   const isUpdating =
     isAddingFlashcard ||
     isUpdatingFlashcardSet ||
@@ -219,6 +235,16 @@ export default function LecturerFlashcards() {
         contentId: content.id,
       },
       onError: setError,
+      onCompleted() {
+        editFlashcardSetName({
+          variables: {
+            flashcardSetUUID: flashcardSetId,
+            courseUUID: courseId,
+            name: metadata.name,
+          },
+          onError: setError,
+        });
+      },
     });
   }
 

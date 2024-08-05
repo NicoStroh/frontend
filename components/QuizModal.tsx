@@ -3,6 +3,7 @@ import { useParams } from "next/navigation";
 import { QuizModalEditMutation } from "@/__generated__/QuizModalEditMutation.graphql";
 import { QuizModalFragment$key } from "@/__generated__/QuizModalFragment.graphql";
 import { QuizModalCreateQuizMutation } from "@/__generated__/QuizModalCreateQuizMutation.graphql";
+import { QuizModalEditQuizNameMutation } from "@/__generated__/QuizModalEditQuizNameMutation.graphql";
 import {
   CreateQuizInput,
   QuestionPoolingMode,
@@ -49,7 +50,7 @@ export function QuizModal({
   chapterId: string;
   _existingQuiz: QuizModalFragment$key | null;
 }) {
-  const { courseId } = useParams();
+  const { quizId, courseId } = useParams();
 
   const existingQuiz = useFragment(
     graphql`
@@ -179,6 +180,16 @@ export function QuizModal({
       }
     `);
 
+  const [editQuizName] = useMutation<QuizModalEditQuizNameMutation>(graphql`
+    mutation QuizModalEditQuizNameMutation(
+      $quizUUID: UUID!
+      $courseUUID: UUID!
+      $name: String!
+    ) {
+      editQuizName(quizUUID: $quizUUID, courseUUID: $courseUUID, name: $name)
+    }
+  `);
+
   const [error, setError] = useState<any>(null);
 
   const valid =
@@ -223,7 +234,15 @@ export function QuizModal({
           questionPoolingMode: input.questionPoolingMode!,
           requiredCorrectAnswers: input.requiredCorrectAnswers!,
         },
-        onCompleted() {
+        onCompleted(data) {
+          // Call editQuizName (gamification_service) mutation after successfully editing the quiz
+          editQuizName({
+            variables: {
+              quizUUID: quizId,
+              name: metadata!.name,
+              courseUUID: courseId,
+            },
+          });
           onClose();
         },
         onError: setError,
@@ -251,7 +270,7 @@ export function QuizModal({
           // Call createQuiz (gamification_service) mutation after successfully creating a quiz
           createQuiz({
             variables: {
-              quizUUID: data.createQuizAssessment.id,
+              quizUUID: quizId,
               name: metadata!.name,
               courseUUID: courseId,
             },
