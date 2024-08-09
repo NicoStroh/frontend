@@ -4,7 +4,7 @@ import { lecturerDeleteFlashcardMutation } from "@/__generated__/lecturerDeleteF
 import { lecturerEditFlashcardSetMutation } from "@/__generated__/lecturerEditFlashcardSetMutation.graphql";
 import { lecturerEditFlashcardsQuery } from "@/__generated__/lecturerEditFlashcardsQuery.graphql";
 import { lecturerDeleteBadgesAndQuestMutation } from "@/__generated__/lecturerDeleteBadgesAndQuestMutation.graphql";
-import { lecturerEditFlashcardSetNameMutation } from "@/__generated__/lecturerEditFlashcardSetNameMutation.graphql";
+import { lecturerEditFlashCardSetNameMutation } from "@/__generated__/lecturerEditFlashCardSetNameMutation.graphql";
 import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentTags } from "@/components/ContentTags";
@@ -120,25 +120,25 @@ export default function LecturerFlashcards() {
   const [deleteBadgesAndQuest, deletingBadgesAndQuest] =
     useMutation<lecturerDeleteBadgesAndQuestMutation>(graphql`
       mutation lecturerDeleteBadgesAndQuestMutation(
-        $flashcardSetUUID: UUID!
+        $flashCardSetUUID: UUID!
         $courseUUID: UUID!
       ) {
         deleteBadgesAndQuestOfFlashCardSet(
-          flashcardSetUUID: $flashcardSetUUID
+          flashCardSetUUID: $flashCardSetUUID
           courseUUID: $courseUUID
         )
       }
     `);
 
-  const [editFlashcardSetName] =
-    useMutation<lecturerEditFlashcardSetNameMutation>(graphql`
-      mutation lecturerEditFlashcardSetNameMutation(
-        $flashcardSetUUID: UUID!
+  const [editFlashCardSetName] =
+    useMutation<lecturerEditFlashCardSetNameMutation>(graphql`
+      mutation lecturerEditFlashCardSetNameMutation(
+        $flashCardSetUUID: UUID!
         $courseUUID: UUID!
         $name: String!
       ) {
-        editFlashcardSetName(
-          flashcardSetUUID: $flashcardSetUUID
+        editFlashCardSetName(
+          flashCardSetUUID: $flashCardSetUUID
           courseUUID: $courseUUID
           name: $name
         )
@@ -236,9 +236,9 @@ export default function LecturerFlashcards() {
       },
       onError: setError,
       onCompleted() {
-        editFlashcardSetName({
+        editFlashCardSetName({
           variables: {
-            flashcardSetUUID: flashcardSetId,
+            flashCardSetUUID: flashcardSetId,
             courseUUID: courseId,
             name: metadata.name,
           },
@@ -270,7 +270,7 @@ export default function LecturerFlashcards() {
 
                       deleteBadgesAndQuest({
                         variables: {
-                          flashcardSetUUID: flashcardSetId,
+                          flashCardSetUUID: flashcardSetId,
                           courseUUID: courseId,
                         },
                         onError: setError,
