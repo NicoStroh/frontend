@@ -238,6 +238,7 @@ export default function StudentCoursePage() {
           </div>
         );
       case "Achiever":
+      case "Socializer":
         return (
           <div className="mx-5">
             <TableContainer component={Paper} className="mt-12 mb-2">
@@ -300,14 +301,14 @@ export default function StudentCoursePage() {
             </Link>
           </div>
         );
-      case "Socializer":
+      /*case "Socializer":
         return (
           <div className="mx-5 mt-12">
             <Typography variant="h6" color="textSecondary">
               Socializer not implemented yet.
             </Typography>
           </div>
-        );
+        );*/
       case "Killer":
         return (
           <div className="mx-5">
