@@ -73,7 +73,8 @@ function _ScoreboardPage() {
         }
       }
     `,
-    { courseId: courseId }
+    { courseId: courseId },
+    { fetchPolicy: "network-only" }
   );
 
   const handleChangePage = (event: unknown, newPage: number) => {

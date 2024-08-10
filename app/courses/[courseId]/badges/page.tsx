@@ -47,7 +47,8 @@ function _BadgesPage() {
         }
       }
     `,
-    { courseUUID: courseId, userUUID: currentUserInfo.id }
+    { courseUUID: courseId, userUUID: currentUserInfo.id },
+    { fetchPolicy: "network-only" }
   );
 
   return (

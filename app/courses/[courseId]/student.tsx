@@ -152,7 +152,8 @@ export default function StudentCoursePage() {
           usersDominantPlayerType(userUUID: $userUUID)
         }
       `,
-      { userUUID: userId }
+      { userUUID: userId },
+      { fetchPolicy: "network-only" }
     );
 
   // Fetch user badges for the course
@@ -171,7 +172,8 @@ export default function StudentCoursePage() {
           }
         }
       `,
-      { courseUUID: id, userUUID: userId }
+      { courseUUID: id, userUUID: userId },
+      { fetchPolicy: "network-only" }
     );
 
   // Fetch current userquest for the course
@@ -190,7 +192,8 @@ export default function StudentCoursePage() {
           }
         }
       `,
-      { courseUUID: id, userUUID: userId }
+      { courseUUID: id, userUUID: userId },
+      { fetchPolicy: "network-only" }
     );
 
   const [leave] = useMutation<studentCourseLeaveMutation>(graphql`

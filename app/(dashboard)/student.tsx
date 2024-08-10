@@ -62,13 +62,14 @@ export default function StudentPage() {
     {}
   );
 
-  const data = useLazyLoadQuery<studentUserHasTakenTestQuery>(
+  const userHasTakenTest = useLazyLoadQuery<studentUserHasTakenTestQuery>(
     graphql`
       query studentUserHasTakenTestQuery($uuid: UUID!) {
         userHasTakenTest(userUUID: $uuid)
       }
     `,
-    { uuid: currentUserInfo.id }
+    { uuid: currentUserInfo.id },
+    { fetchPolicy: "network-only" }
   );
 
   const courses = [
@@ -152,10 +153,10 @@ export default function StudentPage() {
 
   // Check if the user has taken the test
   useEffect(() => {
-    if (data && !data.userHasTakenTest) {
+    if (userHasTakenTest && !userHasTakenTest.userHasTakenTest) {
       setShowPopup(true);
     }
-  }, [data]);
+  }, [userHasTakenTest]);
 
   if (showTest) {
     return (
