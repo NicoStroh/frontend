@@ -29,6 +29,7 @@ import { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import { lecturerAddCourseMutation } from "@/__generated__/lecturerAddCourseMutation.graphql";
 
 function TableRow({ label, value }: { label: string; value: string }) {
   return (
@@ -38,12 +39,6 @@ function TableRow({ label, value }: { label: string; value: string }) {
     </tr>
   );
 }
-
-const addCourseMutation = graphql`
-  mutation lecturerAddCourseMutation($courseUUID: UUID!, $lecturerUUID: UUID!) {
-    addCourse(courseUUID: $courseUUID, lecturerUUID: $lecturerUUID)
-  }
-`;
 
 export default function NewCourse() {
   const router = useRouter();
@@ -67,6 +62,15 @@ export default function NewCourse() {
     `,
     {}
   );
+
+  const [addCourseMutation] = useMutation<lecturerAddCourseMutation>(graphql`
+    mutation lecturerAddCourseMutation(
+      $courseUUID: UUID!
+      $lecturerUUID: UUID!
+    ) {
+      addCourse(courseUUID: $courseUUID, lecturerUUID: $lecturerUUID)
+    }
+  `);
 
   const handleChange = (event: SelectChangeEvent<String>) => {
     setYearDivision(event.target.value as YearDivision);
@@ -96,8 +100,6 @@ export default function NewCourse() {
       }
     }
   `);
-
-  const [addCourse] = useMutation(addCourseMutation);
 
   const [error, setError] = useState<any>(null);
 
@@ -147,7 +149,7 @@ export default function NewCourse() {
                 _addChapter(num + 1);
               } else {
                 // Add course after all chapters have been added
-                addCourse({
+                addCourseMutation({
                   variables: {
                     courseUUID: response.createCourse.id,
                     lecturerUUID: currentUserInfo.id,

@@ -175,8 +175,14 @@ export function QuizModal({
         $quizUUID: UUID!
         $name: String!
         $courseUUID: UUID!
+        $chapterUUID: UUID!
       ) {
-        createQuiz(quizUUID: $quizUUID, name: $name, courseUUID: $courseUUID)
+        createQuiz(
+          quizUUID: $quizUUID
+          name: $name
+          courseUUID: $courseUUID
+          chapterUUID: $chapterUUID
+        )
       }
     `);
 
@@ -273,6 +279,7 @@ export function QuizModal({
               quizUUID: quizId,
               name: metadata!.name,
               courseUUID: courseId,
+              chapterUUID: assessment!.metadata!.chapterId,
             },
             onCompleted(response) {
               onClose();

@@ -23,6 +23,7 @@ export default function StudentFlashcards() {
         findContentsByIds(ids: $id) {
           id
           metadata {
+            chapterId
             name
             ...ContentTags
           }
@@ -69,6 +70,7 @@ export default function StudentFlashcards() {
         onError={setError}
         courseId={courseId}
         flashcardSetId={flashcardSetId}
+        chapterId={flashcards.metadata.chapterId}
       />
     </main>
   );

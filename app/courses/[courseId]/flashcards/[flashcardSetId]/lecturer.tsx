@@ -122,10 +122,12 @@ export default function LecturerFlashcards() {
       mutation lecturerDeleteBadgesAndQuestMutation(
         $flashCardSetUUID: UUID!
         $courseUUID: UUID!
+        $chapterUUID: UUID!
       ) {
         deleteBadgesAndQuestOfFlashCardSet(
           flashCardSetUUID: $flashCardSetUUID
           courseUUID: $courseUUID
+          chapterUUID: $chapterUUID
         )
       }
     `);
@@ -272,6 +274,7 @@ export default function LecturerFlashcards() {
                         variables: {
                           flashCardSetUUID: flashcardSetId,
                           courseUUID: courseId,
+                          chapterUUID: content.metadata.chapterId,
                         },
                         onError: setError,
                       });

@@ -76,18 +76,20 @@ export function AddFlashcardSetModal({
       }
     `);
 
-  const [createFlashCardSet] =
+  const [createFlashCardSet2] =
     useMutation<AddFlashcardSetModalCreateFlashCardSetMutation>(
       graphql`
         mutation AddFlashcardSetModalCreateFlashCardSetMutation(
           $flashCardSetUUID: UUID!
           $name: String!
           $courseUUID: UUID!
+          $chapterUUID: UUID!
         ) {
           createFlashCardSet(
             flashCardSetUUID: $flashCardSetUUID
             name: $name
             courseUUID: $courseUUID
+            chapterUUID: $chapterUUID
           )
         }
       `
@@ -121,11 +123,12 @@ export function AddFlashcardSetModal({
       onCompleted(response) {
         const flashCardSetUUID = response!.createFlashcardSetAssessment!.id;
         setCreateBadgesLoading(true);
-        createFlashCardSet({
+        createFlashCardSet2({
           variables: {
-            flashCardSetUUID,
+            flashCardSetUUID: flashCardSetUUID,
             name: metadata!.name,
             courseUUID: courseId,
+            chapterUUID: chapter.id,
           },
           onError: (err) => {
             setError(err);

@@ -89,6 +89,7 @@ export default function StudentQuiz() {
           $quizUUID: UUID!
           $correctAnswers: Int!
           $totalAnswers: Int!
+          $chapterUUID: UUID!
         ) {
           finishQuiz(
             userUUID: $userUUID
@@ -96,6 +97,7 @@ export default function StudentQuiz() {
             quizUUID: $quizUUID
             correctAnswers: $correctAnswers
             totalAnswers: $totalAnswers
+            chapterUUID: $chapterUUID
           )
         }
       `
@@ -116,6 +118,7 @@ export default function StudentQuiz() {
           id
           metadata {
             name
+            chapterId
             ...ContentTags
           }
           ... on QuizAssessment {
@@ -203,6 +206,7 @@ export default function StudentQuiz() {
               quizUUID: quizId!,
               correctAnswers,
               totalAnswers,
+              chapterUUID: contentsByIds[0].metadata.chapterId,
             },
             onError: setError,
             onCompleted() {},

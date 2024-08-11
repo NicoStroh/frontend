@@ -20,6 +20,7 @@ export function StudentFlashcardSet({
   onComplete = () => {},
   courseId,
   flashcardSetId,
+  chapterId,
 }: {
   flashcards: FlashcardData[];
   emptyMessage: string;
@@ -27,6 +28,7 @@ export function StudentFlashcardSet({
   onComplete?: () => void;
   courseId: string;
   flashcardSetId: string;
+  chapterId: string;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knew, setKnew] = useState(false);
@@ -62,6 +64,7 @@ export function StudentFlashcardSet({
         $flashCardSetUUID: UUID!
         $correctAnswers: Int!
         $totalAnswers: Int!
+        $chapterUUID: UUID!
       ) {
         finishFlashCardSet(
           userUUID: $userUUID
@@ -69,6 +72,7 @@ export function StudentFlashcardSet({
           flashCardSetUUID: $flashCardSetUUID
           correctAnswers: $correctAnswers
           totalAnswers: $totalAnswers
+          chapterUUID: $chapterUUID
         )
       }
     `);
@@ -102,6 +106,7 @@ export function StudentFlashcardSet({
               flashCardSetUUID: flashcardSetId,
               correctAnswers: correctAnswers + (knew ? 1 : 0),
               totalAnswers: flashcards.length,
+              chapterUUID: chapterId,
             },
             onCompleted() {
               onComplete();

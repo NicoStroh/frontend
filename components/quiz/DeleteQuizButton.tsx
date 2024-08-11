@@ -30,8 +30,13 @@ export function DeleteQuizButton({
       mutation DeleteQuizButtonDeleteBadgesAndQuestOfQuizMutation(
         $quizUUID: UUID!
         $courseUUID: UUID!
+        $chapterUUID: UUID!
       ) {
-        deleteBadgesAndQuestOfQuiz(quizUUID: $quizUUID, courseUUID: $courseUUID)
+        deleteBadgesAndQuestOfQuiz(
+          quizUUID: $quizUUID
+          courseUUID: $courseUUID
+          chapterUUID: $chapterUUID
+        )
       }
     `);
 
@@ -55,7 +60,11 @@ export function DeleteQuizButton({
             variables: { id: contentId },
             onCompleted() {
               deleteBadgesAndQuest({
-                variables: { quizUUID: contentId, courseUUID: courseId },
+                variables: {
+                  quizUUID: contentId,
+                  courseUUID: courseId,
+                  chapterUUID: chapterId,
+                },
                 onCompleted,
                 onError,
               });
