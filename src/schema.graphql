@@ -1066,7 +1066,7 @@ type MultipleChoiceQuestion implements Question {
 type Mutation {
   ### Gamification API
   # Add course to gamification database
-  addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
+  addCourse(courseUUID: UUID!, lecturerUUID: UUID!, chapters: [UUID!]!): String!
   # Add a section and therefore a level for the course
   addChapter(courseUUID: UUID!, chapterUUID: UUID!): String!
   # Add user to course in gamification database

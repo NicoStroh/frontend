@@ -3,6 +3,7 @@ import { graphql, useFragment, useMutation } from "react-relay";
 
 import { AddChapterModalFragment$key } from "@/__generated__/AddChapterModalFragment.graphql";
 import { AddChapterModalMutation } from "@/__generated__/AddChapterModalMutation.graphql";
+import { AddChapterModalAddChapterMutation } from "@/__generated__/AddChapterModalAddChapterMutation.graphql";
 import dayjs from "dayjs";
 import lodash from "lodash";
 import { DialogBase } from "./DialogBase";
@@ -51,6 +52,17 @@ export function AddChapterModal({
     }
   `);
 
+  const [linkChapterToCourse] = useMutation<AddChapterModalAddChapterMutation>(
+    graphql`
+      mutation AddChapterModalAddChapterMutation(
+        $courseUUID: UUID!
+        $chapterUUID: UUID!
+      ) {
+        addChapter(courseUUID: $courseUUID, chapterUUID: $chapterUUID)
+      }
+    `
+  );
+
   function handleSubmit(values: ChapterData) {
     const nextCourseNumber = course.chapters.elements.length + 1;
 
@@ -67,8 +79,19 @@ export function AddChapterModal({
           number: nextCourseNumber,
         },
       },
-      onCompleted() {
-        onClose();
+      onCompleted(data) {
+        linkChapterToCourse({
+          variables: {
+            courseUUID: course.id,
+            chapterUUID: data.createChapter.id,
+          },
+          onCompleted() {
+            onClose();
+          },
+          onError(error) {
+            setError(error);
+          },
+        });
       },
       onError(error) {
         setError(error);
