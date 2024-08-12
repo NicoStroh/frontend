@@ -177,7 +177,7 @@ export function QuizModal({
         $courseUUID: UUID!
         $chapterUUID: UUID!
         $skillPoints: Int!
-        $skillType: SkillType!
+        $skillTypes: [SkillType!]!
       ) {
         createQuiz(
           quizUUID: $quizUUID
@@ -185,7 +185,7 @@ export function QuizModal({
           courseUUID: $courseUUID
           chapterUUID: $chapterUUID
           skillPoints: $skillPoints
-          skillType: $skillType
+          skillTypes: $skillTypes
         )
       }
     `);
@@ -196,14 +196,14 @@ export function QuizModal({
       $courseUUID: UUID!
       $name: String!
       $skillPoints: Int!
-      $skillType: SkillType!
+      $skillTypes: [SkillType!]!
     ) {
       editQuiz(
         quizUUID: $quizUUID
         courseUUID: $courseUUID
         name: $name
         skillPoints: $skillPoints
-        skillType: $skillType
+        skillTypes: $skillTypes
       )
     }
   `);
@@ -260,7 +260,7 @@ export function QuizModal({
               name: metadata!.name,
               courseUUID: courseId,
               skillPoints: assessmentMetadata?.skillPoints,
-              skillType: assessmentMetadata?.skillTypes[0],
+              skillTypes: assessmentMetadata?.skillTypes,
             },
           });
           onClose();
@@ -295,7 +295,7 @@ export function QuizModal({
               courseUUID: courseId,
               chapterUUID: chapterId,
               skillPoints: assessmentMetadata!.skillPoints,
-              skillType: assessmentMetadata!.skillTypes[0],
+              skillTypes: assessmentMetadata!.skillTypes,
             },
             onCompleted(response) {
               onClose();

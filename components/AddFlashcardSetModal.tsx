@@ -85,7 +85,7 @@ export function AddFlashcardSetModal({
           $courseUUID: UUID!
           $chapterUUID: UUID!
           $skillPoints: Int!
-          $skillType: SkillType!
+          $skillTypes: [SkillType!]!
         ) {
           createFlashCardSet(
             flashCardSetUUID: $flashCardSetUUID
@@ -93,7 +93,7 @@ export function AddFlashcardSetModal({
             courseUUID: $courseUUID
             chapterUUID: $chapterUUID
             skillPoints: $skillPoints
-            skillType: $skillType
+            skillTypes: $skillTypes
           )
         }
       `
@@ -134,7 +134,7 @@ export function AddFlashcardSetModal({
             courseUUID: courseId,
             chapterUUID: chapter.id,
             skillPoints: assessmentMetadata!.skillPoints,
-            skillType: assessmentMetadata!.skillTypes[0],
+            skillTypes: assessmentMetadata!.skillTypes,
           },
           onError: (err) => {
             setError(err);

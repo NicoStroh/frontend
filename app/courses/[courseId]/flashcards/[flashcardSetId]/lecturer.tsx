@@ -139,14 +139,14 @@ export default function LecturerFlashcards() {
         $courseUUID: UUID!
         $name: String!
         $skillPoints: Int!
-        $skillType: SkillType!
+        $skillTypes: [SkillType!]!
       ) {
         editFlashCardSet(
           flashCardSetUUID: $flashCardSetUUID
           courseUUID: $courseUUID
           name: $name
           skillPoints: $skillPoints
-          skillType: $skillType
+          skillTypes: $skillTypes
         )
       }
     `);
@@ -248,7 +248,7 @@ export default function LecturerFlashcards() {
             courseUUID: courseId,
             name: metadata.name,
             skillPoints: assessmentMetadata?.skillPoints,
-            skillType: assessmentMetadata?.skillTypes[0],
+            skillTypes: assessmentMetadata?.skillTypes,
           },
           onError: setError,
         });
