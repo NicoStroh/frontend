@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import { QuizModalEditMutation } from "@/__generated__/QuizModalEditMutation.graphql";
 import { QuizModalFragment$key } from "@/__generated__/QuizModalFragment.graphql";
 import { QuizModalCreateQuizMutation } from "@/__generated__/QuizModalCreateQuizMutation.graphql";
-import { QuizModalEditQuizNameMutation } from "@/__generated__/QuizModalEditQuizNameMutation.graphql";
+import { QuizModalEditQuizMutation } from "@/__generated__/QuizModalEditQuizMutation.graphql";
 import {
   CreateQuizInput,
   QuestionPoolingMode,
@@ -169,30 +169,42 @@ export function QuizModal({
     }
   `);
 
-  const [createQuiz, createBadgesLoading] =
+  const [createQuiz, createLoading] =
     useMutation<QuizModalCreateQuizMutation>(graphql`
       mutation QuizModalCreateQuizMutation(
         $quizUUID: UUID!
         $name: String!
         $courseUUID: UUID!
         $chapterUUID: UUID!
+        $skillPoints: Int!
+        $skillType: SkillType!
       ) {
         createQuiz(
           quizUUID: $quizUUID
           name: $name
           courseUUID: $courseUUID
           chapterUUID: $chapterUUID
+          skillPoints: $skillPoints
+          skillType: $skillType
         )
       }
     `);
 
-  const [editQuizName] = useMutation<QuizModalEditQuizNameMutation>(graphql`
-    mutation QuizModalEditQuizNameMutation(
+  const [editQuiz] = useMutation<QuizModalEditQuizMutation>(graphql`
+    mutation QuizModalEditQuizMutation(
       $quizUUID: UUID!
       $courseUUID: UUID!
       $name: String!
+      $skillPoints: Int!
+      $skillType: SkillType!
     ) {
-      editQuizName(quizUUID: $quizUUID, courseUUID: $courseUUID, name: $name)
+      editQuiz(
+        quizUUID: $quizUUID
+        courseUUID: $courseUUID
+        name: $name
+        skillPoints: $skillPoints
+        skillType: $skillType
+      )
     }
   `);
 
@@ -241,12 +253,14 @@ export function QuizModal({
           requiredCorrectAnswers: input.requiredCorrectAnswers!,
         },
         onCompleted(data) {
-          // Call editQuizName (gamification_service) mutation after successfully editing the quiz
-          editQuizName({
+          // Call editQuiz (gamification_service) mutation after successfully editing the quiz
+          editQuiz({
             variables: {
               quizUUID: quizId,
               name: metadata!.name,
               courseUUID: courseId,
+              skillPoints: assessmentMetadata?.skillPoints,
+              skillType: assessmentMetadata?.skillTypes[0],
             },
           });
           onClose();
@@ -276,10 +290,12 @@ export function QuizModal({
           // Call createQuiz (gamification_service) mutation after successfully creating a quiz
           createQuiz({
             variables: {
-              quizUUID: quizId,
+              quizUUID: data.createQuizAssessment.id,
               name: metadata!.name,
               courseUUID: courseId,
-              chapterUUID: assessment!.metadata!.chapterId,
+              chapterUUID: chapterId,
+              skillPoints: assessmentMetadata!.skillPoints,
+              skillType: assessmentMetadata!.skillTypes[0],
             },
             onCompleted(response) {
               onClose();
@@ -397,7 +413,7 @@ export function QuizModal({
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <LoadingButton
-          loading={loading || editLoading || createBadgesLoading}
+          loading={loading || editLoading || createLoading}
           disabled={!valid}
           onClick={handleSubmit}
         >

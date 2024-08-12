@@ -1,8 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { studentUsersDominantPlayerTypeQuery } from "@/__generated__/studentUsersDominantPlayerTypeQuery.graphql";
-import { studentGetCoursesUserBadgesQuery } from "@/__generated__/studentGetCoursesUserBadgesQuery.graphql";
-import { studentGetCurrentUserQuestQuery } from "@/__generated__/studentGetCurrentUserQuestQuery.graphql";
+import { studentGamificationDataQuery } from "@/__generated__/studentGamificationDataQuery.graphql";
 import { Button, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
@@ -37,6 +35,7 @@ import {
 import { StudentChapter } from "@/components/StudentChapter";
 import { LightTooltip } from "@/components/LightTooltip";
 import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
+import { BloomLevel } from "@/components/BloomLevel";
 
 interface Data {
   name: string;
@@ -144,57 +143,39 @@ export default function StudentCoursePage() {
     { id }
   );
 
-  // Fetch user dominant player type
-  const { usersDominantPlayerType } =
-    useLazyLoadQuery<studentUsersDominantPlayerTypeQuery>(
-      graphql`
-        query studentUsersDominantPlayerTypeQuery($userUUID: UUID!) {
-          usersDominantPlayerType(userUUID: $userUUID)
+  // Fetch all the gamification data of the student
+  const {
+    usersDominantPlayerType,
+    getUsersBloomLevel,
+    getCoursesUserBadges,
+    getCurrentUserQuest,
+  } = useLazyLoadQuery<studentGamificationDataQuery>(
+    graphql`
+      query studentGamificationDataQuery($userUUID: UUID!, $courseUUID: UUID!) {
+        usersDominantPlayerType(userUUID: $userUUID)
+        getUsersBloomLevel(userUUID: $userUUID, courseUUID: $courseUUID) {
+          totalExp
+          level
+          expForCurrentLevel
+          requiredExpForCurrentLevel
         }
-      `,
-      { userUUID: userId },
-      { fetchPolicy: "network-only" }
-    );
-
-  // Fetch user badges for the course
-  const { getCoursesUserBadges } =
-    useLazyLoadQuery<studentGetCoursesUserBadgesQuery>(
-      graphql`
-        query studentGetCoursesUserBadgesQuery(
-          $courseUUID: UUID!
-          $userUUID: UUID!
-        ) {
-          getCoursesUserBadges(courseUUID: $courseUUID, userUUID: $userUUID) {
-            userBadgeUUID
-            achieved
-            description
-            passingPercentage
-          }
+        getCoursesUserBadges(courseUUID: $courseUUID, userUUID: $userUUID) {
+          userBadgeUUID
+          achieved
+          description
+          passingPercentage
         }
-      `,
-      { courseUUID: id, userUUID: userId },
-      { fetchPolicy: "network-only" }
-    );
-
-  // Fetch current userquest for the course
-  const { getCurrentUserQuest } =
-    useLazyLoadQuery<studentGetCurrentUserQuestQuery>(
-      graphql`
-        query studentGetCurrentUserQuestQuery(
-          $userUUID: UUID!
-          $courseUUID: UUID!
-        ) {
-          getCurrentUserQuest(userUUID: $userUUID, courseUUID: $courseUUID) {
-            questUUID
-            finished
-            description
-            level
-          }
+        getCurrentUserQuest(userUUID: $userUUID, courseUUID: $courseUUID) {
+          questUUID
+          finished
+          description
+          level
         }
-      `,
-      { courseUUID: id, userUUID: userId },
-      { fetchPolicy: "network-only" }
-    );
+      }
+    `,
+    { userUUID: userId, courseUUID: id },
+    { fetchPolicy: "network-only" }
+  );
 
   const [leave] = useMutation<studentCourseLeaveMutation>(graphql`
     mutation studentCourseLeaveMutation($courseId: UUID!) {
@@ -365,6 +346,15 @@ export default function StudentCoursePage() {
             <Info />
           </IconButton>
         </LightTooltip>
+
+        <Typography variant="h1"></Typography>
+        <BloomLevel
+          level={getUsersBloomLevel.level}
+          expForCurrentLevel={getUsersBloomLevel.expForCurrentLevel}
+          requiredExpForCurrentLevel={
+            getUsersBloomLevel.requiredExpForCurrentLevel
+          }
+        />
 
         <div className="flex-1"></div>
 

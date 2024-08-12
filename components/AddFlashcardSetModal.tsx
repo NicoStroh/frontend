@@ -84,12 +84,16 @@ export function AddFlashcardSetModal({
           $name: String!
           $courseUUID: UUID!
           $chapterUUID: UUID!
+          $skillPoints: Int!
+          $skillType: SkillType!
         ) {
           createFlashCardSet(
             flashCardSetUUID: $flashCardSetUUID
             name: $name
             courseUUID: $courseUUID
             chapterUUID: $chapterUUID
+            skillPoints: $skillPoints
+            skillType: $skillType
           )
         }
       `
@@ -129,6 +133,8 @@ export function AddFlashcardSetModal({
             name: metadata!.name,
             courseUUID: courseId,
             chapterUUID: chapter.id,
+            skillPoints: assessmentMetadata!.skillPoints,
+            skillType: assessmentMetadata!.skillTypes[0],
           },
           onError: (err) => {
             setError(err);

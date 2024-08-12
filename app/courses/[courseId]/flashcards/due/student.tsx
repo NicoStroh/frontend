@@ -7,6 +7,7 @@ import { StudentFlashcardSet } from "@/components/StudentFlashcardSet";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
+import { studentChapterIdQuery } from "@/__generated__/studentChapterIdQuery.graphql";
 
 export default function StudentDueFlashcards() {
   // Get course id from url
@@ -28,6 +29,20 @@ export default function StudentDueFlashcards() {
       { courseId }
     );
 
+  const { findContentsByIds } = useLazyLoadQuery<studentChapterIdQuery>(
+    graphql`
+      query studentChapterIdQuery($id: [UUID!]!) {
+        findContentsByIds(ids: $id) {
+          metadata {
+            chapterId
+          }
+        }
+      }
+    `,
+    { id: [flashcardSetId] }
+  );
+  const chapterId = findContentsByIds[0]?.metadata.chapterId as string;
+
   return (
     <main className="flex flex-col h-full">
       <Heading title="Due flashcards" backButton />
@@ -43,6 +58,7 @@ export default function StudentDueFlashcards() {
         onError={setError}
         courseId={courseId}
         flashcardSetId={flashcardSetId}
+        chapterId={chapterId}
       />
     </main>
   );

@@ -63,7 +63,6 @@ export default function NewCourse() {
     {}
   );
 
-  const [chapterUUIDs, setChapterUUIDs] = useState<string[]>([]);
   const [addCourseMutation] = useMutation<lecturerAddCourseMutation>(graphql`
     mutation lecturerAddCourseMutation(
       $courseUUID: UUID!
@@ -137,6 +136,8 @@ export default function NewCourse() {
       },
       onError: setError,
       onCompleted(response) {
+        const createdChapterUUIDs: string[] = [];
+
         function _addChapter(num: number) {
           addChapter({
             variables: {
@@ -151,10 +152,7 @@ export default function NewCourse() {
             },
             onError: setError,
             onCompleted(chapterResponse) {
-              setChapterUUIDs((prevUUIDs) => [
-                ...prevUUIDs,
-                chapterResponse.createChapter.id,
-              ]);
+              createdChapterUUIDs.push(chapterResponse.createChapter.id);
 
               if (num < chapterCount - 1) {
                 _addChapter(num + 1);
@@ -164,7 +162,7 @@ export default function NewCourse() {
                   variables: {
                     courseUUID: response.createCourse.id,
                     lecturerUUID: currentUserInfo.id,
-                    chapters: chapterUUIDs,
+                    chapters: createdChapterUUIDs,
                   },
                   onError: setError,
                   onCompleted() {

@@ -4,7 +4,7 @@ import { lecturerDeleteFlashcardMutation } from "@/__generated__/lecturerDeleteF
 import { lecturerEditFlashcardSetMutation } from "@/__generated__/lecturerEditFlashcardSetMutation.graphql";
 import { lecturerEditFlashcardsQuery } from "@/__generated__/lecturerEditFlashcardsQuery.graphql";
 import { lecturerDeleteBadgesAndQuestMutation } from "@/__generated__/lecturerDeleteBadgesAndQuestMutation.graphql";
-import { lecturerEditFlashCardSetNameMutation } from "@/__generated__/lecturerEditFlashCardSetNameMutation.graphql";
+import { lecturerEditFlashCardSet2Mutation } from "@/__generated__/lecturerEditFlashCardSet2Mutation.graphql";
 import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentTags } from "@/components/ContentTags";
@@ -132,17 +132,21 @@ export default function LecturerFlashcards() {
       }
     `);
 
-  const [editFlashCardSetName] =
-    useMutation<lecturerEditFlashCardSetNameMutation>(graphql`
-      mutation lecturerEditFlashCardSetNameMutation(
+  const [editFlashCardSet] =
+    useMutation<lecturerEditFlashCardSet2Mutation>(graphql`
+      mutation lecturerEditFlashCardSet2Mutation(
         $flashCardSetUUID: UUID!
         $courseUUID: UUID!
         $name: String!
+        $skillPoints: Int!
+        $skillType: SkillType!
       ) {
-        editFlashCardSetName(
+        editFlashCardSet(
           flashCardSetUUID: $flashCardSetUUID
           courseUUID: $courseUUID
           name: $name
+          skillPoints: $skillPoints
+          skillType: $skillType
         )
       }
     `);
@@ -238,11 +242,13 @@ export default function LecturerFlashcards() {
       },
       onError: setError,
       onCompleted() {
-        editFlashCardSetName({
+        editFlashCardSet({
           variables: {
             flashCardSetUUID: flashcardSetId,
             courseUUID: courseId,
             name: metadata.name,
+            skillPoints: assessmentMetadata?.skillPoints,
+            skillType: assessmentMetadata?.skillTypes[0],
           },
           onError: setError,
         });
