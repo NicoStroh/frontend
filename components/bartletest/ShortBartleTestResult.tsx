@@ -43,12 +43,12 @@ const ShortBartleTestResult: React.FC<ShortBartleTestResultProps> = ({
       case "Explorer":
         return (
           "You are an Explorer, enjoying discovering new areas, creating maps, " +
-          "and learning about hidden places in the game."
+          "and learning about hidden places in the game. You can see quets now."
         );
       case "Socializer":
         return (
           "You are a Socializer, valuing interaction with other players and " +
-          "enjoying the social aspects of the game."
+          "enjoying the social aspects of the game. You can see badges now."
         );
       case "Killer":
         return (

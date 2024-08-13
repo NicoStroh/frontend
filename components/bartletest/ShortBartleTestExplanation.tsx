@@ -13,7 +13,8 @@ const ShortBartleTestExplanation: React.FC<Props> = ({ className }) => (
         classifies players of multiplayer online games into four types:
         Achievers, Explorers, Socializers, and Killers. This test helps
         determine your player type, which can provide insights into your gaming
-        preferences.
+        preferences. Your player type will determine, what you will see at the
+        course page.
       </Card.Text>
       <ListGroup>
         <ListGroup.Item>
