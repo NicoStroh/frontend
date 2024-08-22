@@ -134,7 +134,7 @@ export function AddFlashcardSetModal({
             courseUUID: courseId,
             chapterUUID: chapter.id,
             skillPoints: assessmentMetadata!.skillPoints,
-            skillTypes: assessmentMetadata!.skillTypes,
+            skillTypes: assessmentMetadata!.skillTypes as SkillType[],
           },
           onError: (err) => {
             setError(err);
