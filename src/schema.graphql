@@ -1083,11 +1083,11 @@ type Mutation {
   deleteBadgesAndQuestOfQuiz(quizUUID: UUID!, courseUUID: UUID!, chapterUUID: UUID!): String!
 
   # Changes the description of the badges / quest for the quiz / flashCardSet
-  editFlashCardSet(flashCardSetUUID: UUID!, courseUUID: UUID!, name: String!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
-  editQuiz(quizUUID: UUID!, courseUUID: UUID!, name: String!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
+  editFlashCardSet(flashCardSetUUID: UUID!, courseUUID: UUID!, chapterUUID: UUID!, name: String!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
+  editQuiz(quizUUID: UUID!, courseUUID: UUID!, chapterUUID: UUID!, name: String!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
 
   # Test evaluation
-  evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
+  evaluateTest(userUUID: UUID!): PlayerType!
 
   # Submit result to gamification service to check if gamification element was achieved
   finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!, chapterUUID: UUID!): String!
@@ -1320,7 +1320,7 @@ type PublicUserInfo {
 }
 
 # Nico
-type ShortBartleTestResultEntity {
+type PlayerType {
   userHasTakenTest: Boolean!
   achieverPercentage: Int!
   explorerPercentage: Int!

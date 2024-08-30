@@ -137,6 +137,7 @@ export default function LecturerFlashcards() {
       mutation lecturerEditFlashCardSet2Mutation(
         $flashCardSetUUID: UUID!
         $courseUUID: UUID!
+        $chapterUUID: UUID!
         $name: String!
         $skillPoints: Int!
         $skillTypes: [SkillType!]!
@@ -144,6 +145,7 @@ export default function LecturerFlashcards() {
         editFlashCardSet(
           flashCardSetUUID: $flashCardSetUUID
           courseUUID: $courseUUID
+          chapterUUID: $chapterUUID
           name: $name
           skillPoints: $skillPoints
           skillTypes: $skillTypes
@@ -246,6 +248,7 @@ export default function LecturerFlashcards() {
           variables: {
             flashCardSetUUID: flashcardSetId,
             courseUUID: courseId,
+            chapterUUID: content.metadata.chapterId,
             name: metadata.name,
             skillPoints: assessmentMetadata?.skillPoints,
             skillTypes: assessmentMetadata?.skillTypes,

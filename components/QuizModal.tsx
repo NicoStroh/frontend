@@ -194,6 +194,7 @@ export function QuizModal({
     mutation QuizModalEditQuizMutation(
       $quizUUID: UUID!
       $courseUUID: UUID!
+      $chapterUUID: UUID!
       $name: String!
       $skillPoints: Int!
       $skillTypes: [SkillType!]!
@@ -201,6 +202,7 @@ export function QuizModal({
       editQuiz(
         quizUUID: $quizUUID
         courseUUID: $courseUUID
+        chapterUUID: $chapterUUID
         name: $name
         skillPoints: $skillPoints
         skillTypes: $skillTypes
@@ -259,6 +261,7 @@ export function QuizModal({
               quizUUID: quizId,
               name: metadata!.name,
               courseUUID: courseId,
+              chapterUUID: chapterId,
               skillPoints: assessmentMetadata?.skillPoints,
               skillTypes: assessmentMetadata?.skillTypes,
             },
